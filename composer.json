@@ -1,0 +1,25 @@
+{
+    "name": "pragmore/fernet-core",
+    "description": "The Fernet Framework",
+    "require": {
+        "symfony/http-foundation": "^5.2",
+        "monolog/monolog": "^2.2",
+        "league/container": "^3.3",
+        "vlucas/phpdotenv": "^5.2",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {"Fernet\\": "src/Fernet"}
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rodrigo 'Albo' Arce",
+            "email": "albo@pragmore.com"
+        }
+    ]
+}
