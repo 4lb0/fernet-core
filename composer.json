@@ -1,5 +1,5 @@
 {
-    "name": "pragmore/fernet-core",
+    "name": "fernet/framework",
     "description": "The Fernet Framework",
     "require": {
         "symfony/http-foundation": "^5.2",
