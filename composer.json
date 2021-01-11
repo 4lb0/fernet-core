@@ -15,6 +15,9 @@
     "autoload": {
         "psr-4": {"Fernet\\": "src/Fernet"}
     },
+    "autoload-dev": {
+        "psr-4": {"Fernet\\Tests\\": "tests/Fernet/Tests"}
+    },
     "license": "MIT",
     "authors": [
         {

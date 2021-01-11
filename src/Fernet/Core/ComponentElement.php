@@ -111,6 +111,6 @@ class ComponentElement
         }
         $id = static::$idCounter++;
 
-        return sprintf(static::WRAPPER, $content, $id);
+        return sprintf(static::WRAPPER, $id, $content);
     }
 }
