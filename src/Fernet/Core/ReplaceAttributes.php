@@ -13,6 +13,12 @@ class ReplaceAttributes
     private const REGEX_FORM_SUBMIT = '/<form.*?(@(onSubmit)=(["\'])(.*?)\3)/';
     private const REGEX_A_ONCLICK = '/<a.*?(@(onClick)=(["\'])(.*?)\3)/';
     private const REGEX_BIND = '/<input.*?(@(bind)=(["\'])(.*?)\3)/';
+    private Routes $routes;
+
+    public function __construct(Routes $routes)
+    {
+        $this->routes = $routes;
+    }
 
     public function replace(string $content, object $component): string
     {
@@ -34,13 +40,22 @@ class ReplaceAttributes
                     $raws[] = $matches[1][$i];
                     $type = $matches[2][$i];
                     $definition = $matches[4][$i];
-                    $args = false;
+                    $args = null;
                     if (preg_match('/(.+)\((.*)\)$/', $definition, $match)) {
                         [, $definition, $args] = $match;
+                        $args = @unserialize(html_entity_decode($args), ['allowed_classes' => true]);
                     }
-                    $url = Framework::config('urlPrefix').Helper::hyphen($classWithoutNamespace).'/'.Helper::hyphen($definition);
-                    if ($args) {
-                        $url .= '?'.$args;
+                    $url = $this->routes->get($classWithoutNamespace, $definition, $args);
+                    // TODO Refactor this mess
+                    if (!$url) {
+                        $url = Framework::config('urlPrefix').Helper::hyphen($classWithoutNamespace).'/'.Helper::hyphen($definition);
+                        if ($args) {
+                            $param = [];
+                            foreach ($args as $arg) {
+                                $param[] = serialize($arg);
+                            }
+                            $url .= '?'.htmlentities(http_build_query(['fernet-params' => $param]));
+                        }
                     }
                     $contents[] = sprintf($attr, $url).$this->addJs($type, $class, $definition);
                 }

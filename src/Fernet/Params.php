@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fernet;
 
 use function count;
-use function func_get_args;
 use function get_class;
 
 class Params
@@ -34,16 +33,12 @@ class Params
 
     /**
      * Prints the dynamic values passed to the events.
+     * @param array $args
+     * @return string
      */
-    public static function event(): string
+    public static function event(array $args = []): string
     {
-        $args = func_get_args();
-        $output = [];
-        foreach ($args as $arg) {
-            $output[] = serialize($arg);
-        }
-
-        return htmlentities(http_build_query(['fernet-params' => $output]));
+        return htmlentities(serialize($args));
     }
 
     public static function set(string $key, $value): string

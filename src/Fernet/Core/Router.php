@@ -2,7 +2,6 @@
 
 namespace Fernet\Core;
 
-use Fernet\Framework;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,11 +10,13 @@ class Router
 {
     private Request $request;
     private Logger $log;
+    private Routes $routes;
 
-    public function __construct(Request $request, Logger $log)
+    public function __construct(Request $request, Logger $log, Routes $routes)
     {
         $this->request = $request;
         $this->log = $log;
+        $this->routes = $routes;
     }
 
     /**
@@ -27,13 +28,12 @@ class Router
      */
     public function route($defaultComponent): Response
     {
+
         $response = false;
-        $prefix = Framework::config('urlPrefix');
-        $regexp = "@^$prefix([^/]+)/(.+)/?$@";
-        if (preg_match($regexp, $this->request->getPathInfo(), $matches)) {
-            $class = Helper::pascalCase($matches[1]);
-            $method = Helper::camelCase($matches[2]);
-            $this->log->debug('Route matched', compact('class', 'method'));
+        $route = $this->routes->dispatch($this->request);
+        if ($route) {
+            [$class, $method] = explode('.', $route);
+            $this->log->debug("Route matched $route");
             $component = new ComponentElement($class);
             $this->bind($component->getComponent());
             $response = $component->call($method, $this->getArgs());
@@ -50,9 +50,10 @@ class Router
 
     private function getArgs(): array
     {
-        $args = [];
         // TODO Change hardcoded string to constant or config
         $params = $this->request->query->get('fernet-params', []);
+        $this->request->query->remove('fernet-params');
+        $args = $this->request->query->all();
         foreach ($params as $param) {
             // FIXME This is completely unsafe, refactor asap
             $value = @unserialize($param, ['allowed_classes' => true]);

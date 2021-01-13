@@ -101,8 +101,8 @@ class ComponentElement
         $class = get_class($this->component);
         $this->getFromContainer(Logger::class)->debug("Rendering \"$class\"");
         $content = (string) $this->component;
-        $content = (new ReplaceComponents())->replace($content);
-        $content = (new ReplaceAttributes())->replace($content, $this->component);
+        $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
+        $content = $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
         if (
             (isset($this->component->preventWrapper) && $this->component->preventWrapper)
             || !Framework::config('enableJs')

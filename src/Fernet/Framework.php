@@ -39,6 +39,7 @@ final class Framework
         'error404' => Error404::class,
         'error500' => Error500::class,
         'rootPath' => '.',
+        'routingFile' => 'routing.json',
     ];
 
     private static self $instance;
