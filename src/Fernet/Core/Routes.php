@@ -28,9 +28,9 @@ class Routes
         $routes = $this->getRoutes();
         $this->dispatcher = simpleDispatcher(function (RouteCollector $routeCollection) use ($routes) {
             foreach ($routes as $route => $handler) {
-                $routeCollection->get($route, $handler);
+                $routeCollection->addRoute(['GET', 'POST'], $route, $handler);
             }
-            $routeCollection->get(self::DEFAULT_ROUTE, self::DEFAULT_ROUTE_NAME);
+            $routeCollection->addRoute(['GET', 'POST'], self::DEFAULT_ROUTE, self::DEFAULT_ROUTE_NAME);
         });
     }
 
@@ -73,7 +73,8 @@ class Routes
 
     public function dispatch(Request $request): ?string
     {
-        [$routeFound, $handler, $vars] = $this->dispatcher->dispatch($request->getMethod(), $request->getPathInfo());
+        $defaults = [Dispatcher::NOT_FOUND, null, []];
+        [$routeFound, $handler, $vars] = $this->dispatcher->dispatch($request->getMethod(), $request->getPathInfo()) + $defaults;
         if (Dispatcher::FOUND !== $routeFound) {
             return null;
         }
