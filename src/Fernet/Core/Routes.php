@@ -61,8 +61,10 @@ class Routes
     {
         if (isset($this->routes[$component][$method])) {
             $route = $this->routes[$component][$method];
-            foreach ($args as $arg => $value) {
-                $route = str_replace('{'.$arg.'}', $value, $route);
+            if ($args) {
+                foreach ($args as $arg => $value) {
+                    $route = str_replace('{'.$arg.'}', $value, $route);
+                }
             }
 
             return $route;
