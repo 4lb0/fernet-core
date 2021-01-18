@@ -39,7 +39,7 @@ class Routes
      */
     private function getRoutes(): array
     {
-        $filename = Framework::config('rootPath').DIRECTORY_SEPARATOR.Framework::config('routingFile');
+        $filename = Framework::configFile('routingFile');
         if (!file_exists($filename)) {
             return [];
         }

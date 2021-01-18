@@ -98,9 +98,16 @@ final class Framework
         return self::$instance;
     }
 
-    public static function config(string $class)
+    public static function config(string $name)
     {
-        return self::getInstance()->getOption($class);
+        return self::getInstance()->getOption($name);
+    }
+
+    public static function configFile(string $name): string
+    {
+        $framework = self::getInstance();
+
+        return $framework->getOption('rootPath').DIRECTORY_SEPARATOR.$framework->getOption($name);
     }
 
     public function getContainer(): Container
@@ -153,7 +160,7 @@ final class Framework
      */
     public function loadPlugins(): void
     {
-        $filepath = $this->getOption('pluginFile');
+        $filepath = self::configFile('pluginFile');
         if (file_exists($filepath)) {
             try {
                 $plugins = json_decode(file_get_contents($filepath), true, 512, JSON_THROW_ON_ERROR);
