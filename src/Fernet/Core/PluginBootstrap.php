@@ -10,9 +10,9 @@ abstract class PluginBootstrap
 {
     abstract public function setUp(Framework $framework): void;
 
-    public function addComponentNamespace(string $path): void
+    public function addComponentNamespace(string $namespace): void
     {
-        $path .= DIRECTORY_SEPARATOR.'Component';
-        Framework::getInstance()->addOption('componentNamespaces', $path);
+        $namespace .= '\\Component';
+        Framework::getInstance()->addOption('componentNamespaces', $namespace);
     }
 }

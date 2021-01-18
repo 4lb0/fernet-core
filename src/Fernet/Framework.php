@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fernet;
 
-use function call_user_func_array;
 use Exception;
 use Fernet\Component\Error404;
 use Fernet\Component\Error500;
@@ -14,13 +13,11 @@ use Fernet\Core\Helper;
 use Fernet\Core\NotFoundException;
 use Fernet\Core\PluginBootstrap;
 use Fernet\Core\Router;
-use function is_bool;
 use JsonException;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use function strlen;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -165,7 +162,7 @@ final class Framework
                 }
                 foreach ($plugins as $pluginName) {
                     $class = "\\$pluginName\\".self::BOOTSTRAP_CLASS;
-                    if (class_exists($class) && is_a($class, PluginBootstrap::class)) {
+                    if (class_exists($class) && is_subclass_of($class, PluginBootstrap::class)) {
                         $this->getLog()->debug("Load plugin $pluginName");
                         $plugin = new $class();
                         $plugin->setUp($this);
