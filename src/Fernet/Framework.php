@@ -12,8 +12,10 @@ use Fernet\Component\FernetShowError;
 use Fernet\Core\ComponentElement;
 use Fernet\Core\Helper;
 use Fernet\Core\NotFoundException;
+use Fernet\Core\PluginBootstrap;
 use Fernet\Core\Router;
 use function is_bool;
+use JsonException;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Monolog\Handler\StreamHandler;
@@ -40,6 +42,7 @@ final class Framework
         'error500' => Error500::class,
         'rootPath' => '.',
         'routingFile' => 'routing.json',
+        'pluginFile' => 'plugins.json',
     ];
 
     private static self $instance;
@@ -48,6 +51,7 @@ final class Framework
      * Prefix used in env file.
      */
     private const DEFAULT_ENV_PREFIX = 'FERNET_';
+    private const BOOTSTRAP_CLASS = 'Bootstrap';
 
     private Container $container;
     private Logger $log;
@@ -102,11 +106,6 @@ final class Framework
         return self::getInstance()->getOption($class);
     }
 
-    public static function subscribe(string $event, callable $callback): self
-    {
-        return self::getInstance()->observe($event, $callback);
-    }
-
     public function getContainer(): Container
     {
         return $this->container;
@@ -137,7 +136,7 @@ final class Framework
         return $this;
     }
 
-    public function observe(string $event, callable $callback): self
+    public function subscribe(string $event, callable $callback): self
     {
         $this->events[$event][] = $callback;
 
@@ -152,10 +151,37 @@ final class Framework
         }
     }
 
+    /**
+     * @throws Core\Exception
+     */
+    public function loadPlugins(): void
+    {
+        $filepath = $this->getOption('pluginFile');
+        if (file_exists($filepath)) {
+            try {
+                $plugins = json_decode(file_get_contents($filepath), true, 512, JSON_THROW_ON_ERROR);
+                if (!is_array($plugins)) {
+                    throw new Core\Exception("Plugin file \"$filepath\" should contain an array");
+                }
+                foreach ($plugins as $pluginName) {
+                    $class = "\\$pluginName\\".self::BOOTSTRAP_CLASS;
+                    if (class_exists($class) && is_a($class, PluginBootstrap::class)) {
+                        $this->getLog()->debug("Load plugin $pluginName");
+                        $plugin = new $class();
+                        $plugin->setUp($this);
+                    }
+                }
+            } catch (JsonException $e) {
+                throw new Core\Exception("Plugin file \"$filepath\" is not a valid JSON");
+            }
+        }
+    }
+
     public function run($component): Response
     {
         $request = null;
         try {
+            $this->loadPlugins();
             $this->dispatch('onLoad', [$this]);
             $request = Request::createFromGlobals();
             $this->dispatch('onRequest', [$request]);
