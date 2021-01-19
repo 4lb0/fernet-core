@@ -25,8 +25,9 @@ class FernetShowError
         if (0 === strpos($path, $this->rootPath)) {
             $path = substr($path, strlen($this->rootPath));
         }
+        $url = "subl://{$fullPath}:{$line}";
 
-        return "File <strong><a href=\"subl://{$fullPath}:{$line}\">{$path}</a></strong> on line: {$line}";
+        return "File <strong><a href=\"$url\">$path</a></strong> on line: $line";
     }
 
     public function __toString(): string
@@ -35,7 +36,7 @@ class FernetShowError
         <html lang="en">
         <head>
             <title><?php echo self::TITLE; ?>:  <?php echo $this->error->getMessage(); ?></title>
-            <FernetFavicon></FernetFavicon>
+            <FernetFavicon />
             <FernetStylesheet />
         </head>
         <body class="show-error">
