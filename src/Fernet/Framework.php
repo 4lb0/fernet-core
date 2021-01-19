@@ -64,6 +64,7 @@ final class Framework
     {
         $this->container = new Container();
         $this->container->delegate((new ReflectionContainer())->cacheResolutions());
+        $this->container->add(self::class, $this);
         $this->options = $options;
 
         $logger = new Logger($options['logName']);
