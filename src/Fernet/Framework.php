@@ -85,13 +85,23 @@ final class Framework
             }
         }
         self::$instance = new self($options);
-
+        try {
+            self::$instance->loadPlugins();
+        } catch (Throwable $error) {
+            self::$instance->getLog()->error($error->getMessage());
+            $response = new Response(
+                self::$instance->showError($error),
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+            $response->send();
+            exit;
+        }
         return self::$instance;
     }
 
     public static function getInstance(): self
     {
-        if (!self::$instance) {
+        if (!isset(self::$instance)) {
             self::setUp();
         }
 
@@ -185,7 +195,6 @@ final class Framework
     {
         $request = null;
         try {
-            $this->loadPlugins();
             $this->dispatch('onLoad', [$this]);
             $request = Request::createFromGlobals();
             $this->dispatch('onRequest', [$request]);
@@ -204,13 +213,13 @@ final class Framework
         } catch (Exception $exception) {
             $this->log->error($exception->getMessage());
             $response = new Response(
-                $this->showError($exception, 'error500'),
+                $this->showError($exception),
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         } catch (Throwable $error) {
             $this->log->error('An error or an exception was occurred', [$error]);
             $response = new Response(
-                $this->showError($error, 'error500'),
+                $this->showError($error),
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -219,7 +228,7 @@ final class Framework
         return $response;
     }
 
-    public function showError(Throwable $error, string $type): string
+    public function showError(Throwable $error, string $type = 'error500'): string
     {
         $this->dispatch('onError', [$error]);
         try {
