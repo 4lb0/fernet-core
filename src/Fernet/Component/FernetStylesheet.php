@@ -33,7 +33,7 @@ class FernetStylesheet
             .show-error .icon svg { height:1em; width:1em }
             .show-error .icon.baseline svg { top: .125em; position: relative }
             .show-error h1 { font-size: 1.5em }
-            .show-error h2 { font-size: 2em; line-height: 1.2em; color: #C23}
+            .show-error h2 { font-size: 1.2em; line-height: 1.2em; color: #C23}
             </style>
 EOCSS;
     }
