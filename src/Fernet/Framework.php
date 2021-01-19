@@ -111,14 +111,14 @@ final class Framework
 
     public static function config(string $name)
     {
-        return self::getInstance()->getOption($name);
+        return self::getInstance()->getConfig($name);
     }
 
     public static function configFile(string $name): string
     {
         $framework = self::getInstance();
 
-        return $framework->getOption('rootPath').DIRECTORY_SEPARATOR.$framework->getOption($name);
+        return $framework->getConfig('rootPath').DIRECTORY_SEPARATOR.$framework->getConfig($name);
     }
 
     public function getContainer(): Container
@@ -126,7 +126,7 @@ final class Framework
         return $this->container;
     }
 
-    public function getOption(string $option)
+    public function getConfig(string $option)
     {
         if (!isset($this->options[$option])) {
             $this->log->warning("Undefined config \"$option\"");
@@ -192,12 +192,13 @@ final class Framework
         }
     }
 
-    public function run($component): Response
+    public function run($component, ?Request $request = null): Response
     {
-        $request = null;
         try {
             $this->dispatch('onLoad', [$this]);
-            $request = Request::createFromGlobals();
+            if (!$request) {
+                $request = Request::createFromGlobals();
+            }
             $this->dispatch('onRequest', [$request]);
             $this->container->add(Request::class, $request);
             /** @var Router $router */
@@ -218,7 +219,7 @@ final class Framework
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         } catch (Throwable $error) {
-            $this->log->error('An error or an exception was occurred', [$error]);
+            $this->log->error($error->getMessage());
             $response = new Response(
                 $this->showError($error),
                 Response::HTTP_INTERNAL_SERVER_ERROR
@@ -233,9 +234,9 @@ final class Framework
     {
         $this->dispatch('onError', [$error]);
         try {
-            $element = $this->getOption('devMode') ?
+            $element = $this->getConfig('devMode') ?
                 new ComponentElement(FernetShowError::class, ['error' => $error]) :
-                new ComponentElement($this->getOption($type));
+                new ComponentElement($this->getConfig($type));
 
             return $element->render();
         } catch (Exception $e) {

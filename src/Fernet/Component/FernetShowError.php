@@ -16,7 +16,7 @@ class FernetShowError
 
     public function __construct(Framework $fernet)
     {
-        $this->rootPath = rtrim($fernet->getOption('rootPath'), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+        $this->rootPath = rtrim($fernet->getConfig('rootPath'), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
     }
 
     private function path(string $path, int $line): string
