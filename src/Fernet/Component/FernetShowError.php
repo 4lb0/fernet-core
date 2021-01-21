@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fernet\Component;
 
 use Fernet\Framework;
+use Fernet\Core\Exception;
 use Throwable;
 
 class FernetShowError
@@ -47,6 +48,10 @@ class FernetShowError
                 <?php echo self::TITLE; ?>
             </h1>
             <h2><?php echo $this->error->getMessage(); ?></h2>
+
+            <?php if ($this->error instanceof Exception && $this->error->getLink()) { ?>
+            <p>For more help go to <a href="<?php echo $this->error->getLink(); ?>"><?php echo $this->error->getLink(); ?></a></p>
+            <?php } ?> 
             <p>
                 <?php echo $this->path($this->error->getFile(), $this->error->getLine()); ?>
             </p>
