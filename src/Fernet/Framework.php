@@ -24,7 +24,7 @@ use Throwable;
 
 final class Framework
 {
-    private const DEFAULT_OPTIONS = [
+    private const DEFAULT_CONFIG = [
         'devMode' => false,
         'enableJs' => true,
         'urlPrefix' => '/',
@@ -52,7 +52,7 @@ final class Framework
 
     private Container $container;
     private Logger $log;
-    private array $options;
+    private array $configs;
     private array $events = [
         'onLoad' => [],
         'onRequest' => [],
@@ -60,32 +60,32 @@ final class Framework
         'onError' => [],
     ];
 
-    private function __construct(array $options)
+    private function __construct(array $configs)
     {
         $this->container = new Container();
         $this->container->delegate((new ReflectionContainer())->cacheResolutions());
         $this->container->add(self::class, $this);
-        $this->options = $options;
+        $this->configs = $configs;
 
-        $logger = new Logger($options['logName']);
-        $logger->pushHandler(new StreamHandler($options['logPath'], $options['logLevel']));
+        $logger = new Logger($configs['logName']);
+        $logger->pushHandler(new StreamHandler($configs['logPath'], $configs['logLevel']));
         $this->container->add(Logger::class, $logger);
         $this->log = $logger;
     }
 
-    public static function setUp(array $options = [], $envPrefix = self::DEFAULT_ENV_PREFIX): self
+    public static function setUp(array $configs = [], $envPrefix = self::DEFAULT_ENV_PREFIX): self
     {
-        $options = array_merge(self::DEFAULT_OPTIONS, $options);
+        $configs = array_merge(self::DEFAULT_CONFIG, $configs);
         foreach ($_ENV as $key => $value) {
             if (0 === strpos($key, $envPrefix)) {
                 $key = substr($key, strlen($envPrefix));
                 $key = Helper::camelCase($key);
-                $options[$key] = is_bool($options[$key]) ?
+                $configs[$key] = is_bool($configs[$key]) ?
                     filter_var($value, FILTER_VALIDATE_BOOLEAN) :
                     $value;
             }
         }
-        self::$instance = new self($options);
+        self::$instance = new self($configs);
         try {
             self::$instance->loadPlugins();
         } catch (Throwable $error) {
@@ -126,27 +126,27 @@ final class Framework
         return $this->container;
     }
 
-    public function getConfig(string $option)
+    public function getConfig(string $config)
     {
-        if (!isset($this->options[$option])) {
-            $this->log->warning("Undefined config \"$option\"");
+        if (!isset($this->configs[$config])) {
+            $this->log->warning("Undefined config \"$config\"");
 
             return null;
         }
 
-        return $this->options[$option];
+        return $this->configs[$config];
     }
 
-    public function setOption(string $option, $value): self
+    public function setConfig(string $config, $value): self
     {
-        $this->options[$option] = $value;
+        $this->configs[$config] = $value;
 
         return $this;
     }
 
-    public function addOption(string $option, $value): self
+    public function addConfig(string $config, $value): self
     {
-        $this->options[$option][] = $value;
+        $this->configs[$config][] = $value;
 
         return $this;
     }

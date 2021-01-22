@@ -12,7 +12,8 @@ class ReplaceAttributes
 {
     private const REGEX_FORM_SUBMIT = '/<form.*?(@(onSubmit)=(["\'])(.*?)\3)/';
     private const REGEX_A_ONCLICK = '/<a.*?(@(onClick)=(["\'])(.*?)\3)/';
-    private const REGEX_BIND = '/<input.*?(@(bind)=(["\'])(.*?)\3)/';
+    private const REGEX_BIND_INPUT = '/<input.*?(@(bind)=(["\'])(.*?)\3)/';
+    private const REGEX_BIND_TEXTAREA = '/<textarea(.*?)(@bind=(["\'])((?:\\\\3|(?:(?!\3)).)*)(\3))([^>]*)>/';
     private Routes $routes;
 
     public function __construct(Routes $routes)
@@ -62,8 +63,8 @@ class ReplaceAttributes
             }
         }
         foreach ([
-            static::REGEX_BIND => 'name="%s" value="%s"',
-        ] as $regexp => $attr) {
+                     static::REGEX_BIND_INPUT => 'name="%s" value="%s"',
+                 ] as $regexp => $attr) {
             if (preg_match_all($regexp, $content, $matches)) {
                 foreach ($matches[1] as $i => $key) {
                     $raws[] = $matches[1][$i];
@@ -76,6 +77,21 @@ class ReplaceAttributes
                     }
                     $contents[] = sprintf($attr, "fernet-bind[$definition]", $value).$this->addJs($type, $class, $definition);
                 }
+            }
+        }
+        if (preg_match_all(static::REGEX_BIND_TEXTAREA, $content, $matches)) {
+            foreach ($matches[1] as $i => $key) {
+                $raws[] = $matches[0][$i];
+                $before = $matches[1][$i];
+                $after = $matches[6][$i];
+                $type = 'textearea';
+                $definition = $matches[4][$i];
+                $value = $component;
+                $vars = explode('.', $definition);
+                foreach ($vars as $var) {
+                    $value = $value->$var;
+                }
+                $contents[] = "<textarea{$before} name=\"fernet-bind[$definition]\"".$this->addJs($type, $class, $definition)."{$after}>$value";
             }
         }
 
