@@ -48,7 +48,7 @@ final class Framework
      * Prefix used in env file.
      */
     private const DEFAULT_ENV_PREFIX = 'FERNET_';
-    private const BOOTSTRAP_CLASS = 'Bootstrap';
+    private const PLUGIN_FILE = 'plugin.php';
 
     private Container $container;
     private Logger $log;
@@ -97,6 +97,7 @@ final class Framework
             $response->send();
             exit;
         }
+
         return self::$instance;
     }
 
@@ -171,25 +172,47 @@ final class Framework
      */
     public function loadPlugins(): void
     {
-        $filepath = self::configFile('pluginFile');
-        if (file_exists($filepath)) {
-            try {
-                $plugins = json_decode(file_get_contents($filepath), true, 512, JSON_THROW_ON_ERROR);
-                if (!is_array($plugins)) {
-                    throw new Core\Exception("Plugin file \"$filepath\" should contain an array");
-                }
-                foreach ($plugins as $pluginName) {
-                    $class = "\\$pluginName\\".self::BOOTSTRAP_CLASS;
-                    if (class_exists($class) && is_subclass_of($class, PluginBootstrap::class)) {
-                        $this->getLog()->debug("Load plugin $pluginName");
-                        $plugin = new $class();
-                        $plugin->setUp($this);
-                    }
-                }
-            } catch (JsonException $e) {
-                throw new Core\Exception("Plugin file \"$filepath\" is not a valid JSON");
-            }
+        $plugins = $this->warmUpPlugins();
+        // TODO: Cache warm up
+        foreach ($plugins as $pluginName => $class) {
+            $this->getLog()->debug("Load plugin $pluginName");
+            (new $class())->setUp($this);
         }
+    }
+
+    /**
+     * @throws Core\Exception
+     */
+    public function warmUpPlugins(): array
+    {
+        $filepath = self::configFile('pluginFile');
+        if (!file_exists($filepath)) {
+            return [];
+        }
+        $plugins = [];
+        try {
+            $list = json_decode(file_get_contents($filepath), true, 512, JSON_THROW_ON_ERROR);
+            if (!is_array($plugins)) {
+                throw new Core\Exception("Plugin file \"$filepath\" should contain an array");
+            }
+            foreach ($list as $pluginName) {
+                $file = $this->getConfig('rootPath')."/vendor/$pluginName/".self::PLUGIN_FILE;
+                if (!file_exists($file)) {
+                    throw new Core\Exception("Plugin \"$pluginName\" is not a valid plugin");
+                }
+                $class = require $file;
+                if (class_exists($class) && is_subclass_of($class, PluginBootstrap::class)) {
+                    $this->getLog()->debug("Warm up plugin $pluginName");
+                    $plugins[$pluginName] = $class;
+                } else {
+                    throw new Core\Exception("Plugin \"$pluginName\" Bootstrap class should extend ".PluginBootstrap::class);
+                }
+            }
+        } catch (JsonException $e) {
+            throw new Core\Exception("Plugin file \"$filepath\" is not a valid JSON");
+        }
+
+        return $plugins;
     }
 
     public function run($component, ?Request $request = null): Response
