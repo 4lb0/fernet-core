@@ -204,6 +204,9 @@ final class Framework
                 if (class_exists($class) && is_subclass_of($class, PluginBootstrap::class)) {
                     $this->getLog()->debug("Warm up plugin $pluginName");
                     $plugins[$pluginName] = $class;
+                    // TODO: When I should run the install?
+                    $this->getLog()->debug("Install plugin $pluginName");
+                    (new $class())->install($this);
                 } else {
                     throw new Core\Exception("Plugin \"$pluginName\" Bootstrap class should extend ".PluginBootstrap::class);
                 }
