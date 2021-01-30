@@ -26,7 +26,7 @@ class FernetShowError
         if (0 === strpos($path, $this->rootPath)) {
             $path = substr($path, strlen($this->rootPath));
         }
-        $url = "subl://{$fullPath}:{$line}";
+        $url = "subl://$fullPath:$line";
 
         return "File <strong><a href=\"$url\">$path</a></strong> on line: $line";
     }
@@ -60,7 +60,9 @@ class FernetShowError
             <?php foreach ($this->error->getTrace() as $trace) { ?>
                 <li>
                     <p><strong><?php echo $trace['class'] ?? ''; ?><?php echo $trace['type'] ?? ''; ?><?php echo $trace['function'].'()' ?? ''; ?></strong></p>
-                    <p><?php echo $this->path($trace['file'], $trace['line']); ?></p>
+                    <?php if (isset($trace['file'])) { ?>
+                        <p><?php echo $this->path($trace['file'], $trace['line']); ?></p>
+                    <?php } ?>
                 </li>
             <?php } ?>
             </ol>
