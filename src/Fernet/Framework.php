@@ -26,7 +26,6 @@ final class Framework
 {
     private const DEFAULT_CONFIG = [
         'devMode' => false,
-        'enableJs' => true,
         'urlPrefix' => '/',
         'componentNamespaces' => [
             'App\\Component',

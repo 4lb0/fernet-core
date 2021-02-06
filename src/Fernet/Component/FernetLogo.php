@@ -8,7 +8,6 @@ class FernetLogo
 {
     public string $width = '200';
     public string $height = '200';
-    public bool $preventWrapper = true;
 
     public function __toString(): string
     {

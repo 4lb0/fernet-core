@@ -13,10 +13,7 @@ use Stringable;
 
 class ComponentElement
 {
-    private const WRAPPER = '<div id="_fernet_component_%d" class="_fernet_component">%s</div>';
     private Stringable $component;
-
-    private static int $idCounter = 0;
 
     /**
      * ComponentElement constructor.
@@ -55,6 +52,8 @@ class ComponentElement
     }
 
     /**
+     * @param string $class
+     * @return object
      * @throws NotFoundException
      */
     private function getObject(string $class): object
@@ -78,7 +77,6 @@ class ComponentElement
      * @param $args
      *
      * @return mixed
-     *
      * @throws NotFoundException
      */
     public function call($method, $args): mixed
@@ -97,14 +95,7 @@ class ComponentElement
         $content = (string) $this->component;
         $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
         $content = $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
-        if (
-            (isset($this->component->preventWrapper) && $this->component->preventWrapper)
-            || !Framework::config('enableJs')
-            ) {
-            return $content;
-        }
-        $id = static::$idCounter++;
 
-        return sprintf(static::WRAPPER, $id, $content);
+        return $content;
     }
 }

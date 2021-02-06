@@ -12,7 +12,6 @@ class FernetShowError
 {
     private const TITLE = 'Error on Fernet';
     public Throwable $error;
-    public bool $preventWrapper = true;
     private string $rootPath;
 
     public function __construct(Framework $fernet)
