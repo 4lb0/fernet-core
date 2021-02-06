@@ -135,30 +135,6 @@ Feature: Components
     When the framework is run with component "HelloObjectApp"
     Then the output is '<p>Hello John</p>'
 
-  Scenario: Be careful with circular reference in the components.
-    Given the component defined in the class
-    """
-    class CircularReferenceA
-    {
-      public function __toString(): string
-      {
-        return "<CircularReferenceB />";
-      }
-    }
-    """
-    And the component defined in the class
-    """
-    class CircularReferenceB
-    {
-      public function __toString(): string
-      {
-        return "<CircularReferenceA />";
-      }
-    }
-    """
-    When the framework is run with component "CircularReferenceA"
-    Then the output is an error 500
-
   Scenario: When you run a not found component you get a 404 error.
     When the framework is run with component "ThisComponentNotExists"
     Then the output is an error 404
