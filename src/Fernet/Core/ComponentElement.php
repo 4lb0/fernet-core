@@ -9,11 +9,12 @@ use Fernet\Framework;
 use function get_class;
 use function is_string;
 use Monolog\Logger;
+use Stringable;
 
 class ComponentElement
 {
     private const WRAPPER = '<div id="_fernet_component_%d" class="_fernet_component">%s</div>';
-    private object $component;
+    private Stringable $component;
 
     private static int $idCounter = 0;
 
@@ -27,12 +28,12 @@ class ComponentElement
      * @throws Exception
      * @throws NotFoundException
      */
-    public function __construct($classOrObject, array $params = [], string $childContent = '')
+    public function __construct(Stringable | string $classOrObject, array $params = [], string $childContent = '')
     {
         $component = is_string($classOrObject) ?
             $this->getObject($classOrObject) :
             $classOrObject;
-        if (!method_exists($component, '__toString')) {
+        if (!$component instanceof Stringable) {
             $class = get_class($component);
             throw new Exception("Component \"$class\" needs to implement __toString method");
         }
@@ -54,9 +55,6 @@ class ComponentElement
     }
 
     /**
-     * @param string $class Tag name of the component to search in the namespaces
-     *
-     * @return object
      * @throws NotFoundException
      */
     private function getObject(string $class): object
@@ -83,7 +81,7 @@ class ComponentElement
      *
      * @throws NotFoundException
      */
-    public function call($method, $args)
+    public function call($method, $args): mixed
     {
         if (!method_exists($this->component, $method)) {
             throw new NotFoundException(sprintf('Method "%s" not found in component "%s"', $method, get_class($this->component)));
@@ -92,10 +90,6 @@ class ComponentElement
         return call_user_func_array([$this->component, $method], $args);
     }
 
-    /**
-     * @throws Exception
-     * @throws NotFoundException
-     */
     public function render(): string
     {
         $class = get_class($this->component);
