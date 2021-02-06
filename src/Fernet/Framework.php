@@ -77,7 +77,7 @@ final class Framework
     {
         $configs = array_merge(self::DEFAULT_CONFIG, $configs);
         foreach ($_ENV as $key => $value) {
-            if (0 === strpos($key, $envPrefix)) {
+            if (str_starts_with($key, $envPrefix)) {
                 $key = substr($key, strlen($envPrefix));
                 $key = Helper::camelCase($key);
                 $configs[$key] = is_bool($configs[$key]) ?
@@ -138,7 +138,15 @@ final class Framework
         return $this->configs[$config];
     }
 
-    public function setConfig(string $config, $value): self
+    /**
+     * @Framework
+     *
+     * @param string $config Config name
+     * @param mixed  $value  Config value
+     *
+     * @return Framework
+     */
+    public function setConfig(string $config, mixed $value): self
     {
         $this->configs[$config] = $value;
 
@@ -152,6 +160,14 @@ final class Framework
         return $this;
     }
 
+    /**
+     * @Framework
+     *
+     * @param string   $event    Event to be subscribed
+     * @param callable $callback Callback
+     *
+     * @return Framework
+     */
     public function subscribe(string $event, callable $callback): self
     {
         $this->events[$event][] = $callback;
@@ -211,7 +227,7 @@ final class Framework
                     throw new Core\Exception("Plugin \"$pluginName\" Bootstrap class should extend ".PluginBootstrap::class);
                 }
             }
-        } catch (JsonException $e) {
+        } catch (JsonException) {
             throw new Core\Exception("Plugin file \"$filepath\" is not a valid JSON");
         }
 
