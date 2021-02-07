@@ -31,9 +31,4 @@ class ParamsTest extends TestCase
            Params::get($key)
        );
     }
-
-    public function testEvent(): void
-    {
-        self::markTestSkipped('Current implementation of event is risky, we should refactor');
-    }
 }
