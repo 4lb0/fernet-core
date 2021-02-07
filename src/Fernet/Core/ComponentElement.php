@@ -41,7 +41,7 @@ class ComponentElement
         $this->component = $component;
     }
 
-    public function getComponent(): object
+    public function getComponent(): Stringable
     {
         return $this->component;
     }

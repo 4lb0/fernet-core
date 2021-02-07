@@ -18,6 +18,7 @@ use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Stringable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -114,11 +115,9 @@ final class Framework
         return self::getInstance()->getConfig($name);
     }
 
-    public static function configFile(string $name): string
+    public function configFile(string $name): string
     {
-        $framework = self::getInstance();
-
-        return $framework->getConfig('rootPath').DIRECTORY_SEPARATOR.$framework->getConfig($name);
+        return $this->getConfig('rootPath').DIRECTORY_SEPARATOR.$this->getConfig($name);
     }
 
     public function getContainer(): Container
@@ -200,7 +199,7 @@ final class Framework
      */
     public function warmUpPlugins(): array
     {
-        $filepath = self::configFile('pluginFile');
+        $filepath = $this->configFile('pluginFile');
         if (!file_exists($filepath)) {
             return [];
         }
@@ -233,7 +232,7 @@ final class Framework
         return $plugins;
     }
 
-    public function run($component, ?Request $request = null): Response
+    public function run(Stringable | string $component, ?Request $request = null): Response
     {
         try {
             $this->dispatch('onLoad', [$this]);
