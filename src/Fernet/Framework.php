@@ -11,9 +11,8 @@ use Fernet\Component\FernetShowError;
 use Fernet\Core\ComponentElement;
 use Fernet\Core\Helper;
 use Fernet\Core\NotFoundException;
-use Fernet\Core\PluginBootstrap;
+use Fernet\Core\PluginLoader;
 use Fernet\Core\Router;
-use JsonException;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Monolog\Handler\StreamHandler;
@@ -48,7 +47,6 @@ final class Framework
      * Prefix used in env file.
      */
     private const DEFAULT_ENV_PREFIX = 'FERNET_';
-    private const PLUGIN_FILE = 'plugin.php';
 
     private Container $container;
     private Logger $log;
@@ -87,7 +85,7 @@ final class Framework
         }
         self::$instance = new self($configs);
         try {
-            self::$instance->loadPlugins();
+            self::$instance->getContainer()->get(PluginLoader::class)->loadPlugins();
         } catch (Throwable $error) {
             self::$instance->getLog()->error($error->getMessage());
             $response = new Response(
@@ -179,57 +177,6 @@ final class Framework
             $this->log->debug("Dispatch \"$event\" callback #$position");
             call_user_func_array($callback, $args);
         }
-    }
-
-    /**
-     * @throws Core\Exception
-     */
-    public function loadPlugins(): void
-    {
-        $plugins = $this->warmUpPlugins();
-        // TODO: Cache warm up
-        foreach ($plugins as $pluginName => $class) {
-            $this->getLog()->debug("Load plugin $pluginName");
-            (new $class())->setUp($this);
-        }
-    }
-
-    /**
-     * @throws Core\Exception
-     */
-    public function warmUpPlugins(): array
-    {
-        $filepath = $this->configFile('pluginFile');
-        if (!file_exists($filepath)) {
-            return [];
-        }
-        $plugins = [];
-        try {
-            $list = json_decode(file_get_contents($filepath), true, 512, JSON_THROW_ON_ERROR);
-            if (!is_array($plugins)) {
-                throw new Core\Exception("Plugin file \"$filepath\" should contain an array");
-            }
-            foreach ($list as $pluginName) {
-                $file = $this->getConfig('rootPath')."/vendor/$pluginName/".self::PLUGIN_FILE;
-                if (!file_exists($file)) {
-                    throw new Core\Exception("Plugin \"$pluginName\" is not a valid plugin");
-                }
-                $class = require $file;
-                if (class_exists($class) && is_subclass_of($class, PluginBootstrap::class)) {
-                    $this->getLog()->debug("Warm up plugin $pluginName");
-                    $plugins[$pluginName] = $class;
-                    // TODO: When I should run the install?
-                    $this->getLog()->debug("Install plugin $pluginName");
-                    (new $class())->install($this);
-                } else {
-                    throw new Core\Exception("Plugin \"$pluginName\" Bootstrap class should extend ".PluginBootstrap::class);
-                }
-            }
-        } catch (JsonException) {
-            throw new Core\Exception("Plugin file \"$filepath\" is not a valid JSON");
-        }
-
-        return $plugins;
     }
 
     public function run(Stringable | string $component, ?Request $request = null): Response
