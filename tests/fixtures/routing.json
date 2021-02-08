@@ -1,0 +1,5 @@
+{
+  "/about": "Menu.handleAbout",
+  "/some/foo/bar/page": "FooBar.renderPage",
+  "/name/{name}/age/{age}": "UserProfile.show"
+}

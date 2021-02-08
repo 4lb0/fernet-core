@@ -83,13 +83,23 @@ class Routes
         }
     }
 
+    /**
+     * @param string $component
+     * @param string $method
+     * @param array|null $args
+     * @return string|null
+     * @throws Exception
+     */
     public function get(string $component, string $method, ?array $args = null): ?string
     {
+        if (!$this->routes) {
+            $this->defaultDispatcher();
+        }
         if (isset($this->routes[$component][$method])) {
             $route = $this->routes[$component][$method];
             if ($args) {
                 foreach ($args as $arg => $value) {
-                    $route = str_replace('{'.$arg.'}', $value, $route);
+                    $route = str_replace('{'.$arg.'}', urlencode((string) $value), $route);
                 }
             }
 
