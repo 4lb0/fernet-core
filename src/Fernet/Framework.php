@@ -84,17 +84,7 @@ final class Framework
             }
         }
         self::$instance = new self($configs);
-        try {
-            self::$instance->getContainer()->get(PluginLoader::class)->loadPlugins();
-        } catch (Throwable $error) {
-            self::$instance->log->error($error->getMessage());
-            $response = new Response(
-                self::$instance->showError($error),
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
-            $response->send();
-            exit;
-        }
+        self::$instance->getContainer()->get(PluginLoader::class)->loadPlugins();
 
         return self::$instance;
     }
@@ -198,12 +188,6 @@ final class Framework
             return new Response(
                 $this->showError($notFoundException, 'error404'),
                 Response::HTTP_NOT_FOUND
-            );
-        } catch (Exception $exception) {
-            $this->log->error($exception->getMessage());
-            $response = new Response(
-                $this->showError($exception),
-                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         } catch (Throwable $error) {
             $this->log->error($error->getMessage());
