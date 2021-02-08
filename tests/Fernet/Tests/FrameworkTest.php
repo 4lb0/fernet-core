@@ -76,4 +76,5 @@ class FrameworkTest extends TestCase
         $request = $this->createRequest('/not/found');
         self::assertEquals('not found', $framework->run($component, $request)->getContent());
     }
+
 }

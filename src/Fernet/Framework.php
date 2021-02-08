@@ -87,7 +87,7 @@ final class Framework
         try {
             self::$instance->getContainer()->get(PluginLoader::class)->loadPlugins();
         } catch (Throwable $error) {
-            self::$instance->getLog()->error($error->getMessage());
+            self::$instance->log->error($error->getMessage());
             $response = new Response(
                 self::$instance->showError($error),
                 Response::HTTP_INTERNAL_SERVER_ERROR
@@ -231,10 +231,5 @@ final class Framework
 
             return 'Error: '.$error->getMessage();
         }
-    }
-
-    public function getLog(): Logger
-    {
-        return $this->log;
     }
 }
