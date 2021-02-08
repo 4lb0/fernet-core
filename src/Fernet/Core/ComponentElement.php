@@ -22,7 +22,6 @@ class ComponentElement
      * @param array  $params        The params the object need to be created
      * @param string $childContent  The HTML child content if applied
      *
-     * @throws Exception
      * @throws NotFoundException
      */
     public function __construct(Stringable | string $classOrObject, array $params = [], string $childContent = '')
@@ -30,10 +29,6 @@ class ComponentElement
         $component = is_string($classOrObject) ?
             $this->getObject($classOrObject) :
             $classOrObject;
-        if (!$component instanceof Stringable) {
-            $class = get_class($component);
-            throw new Exception("Component \"$class\" needs to implement __toString method");
-        }
         foreach ($params as $key => $value) {
             $component->$key = $value;
         }
@@ -53,10 +48,11 @@ class ComponentElement
 
     /**
      * @param string $class
-     * @return object
+     * @return Stringable
+     *
      * @throws NotFoundException
      */
-    private function getObject(string $class): object
+    private function getObject(string $class): Stringable
     {
         // TODO Add filesystem or memory cache to the string to object
         if (class_exists($class)) {
