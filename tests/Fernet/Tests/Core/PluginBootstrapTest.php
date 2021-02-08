@@ -5,11 +5,11 @@ namespace Fernet\Tests\Core;
 
 use Fernet\Core\PluginBootstrap;
 use Fernet\Framework;
-use PHPUnit\Framework\TestCase;
+use Fernet\Tests\TestCase;
 
 class PluginBootstrapTest extends TestCase
 {
-    public function testAddComponentNamespace()
+    public function testAddComponentNamespace(): void
     {
         $framework = Framework::setUp([]);
         $stub = $this->getMockForAbstractClass(PluginBootstrap::class);

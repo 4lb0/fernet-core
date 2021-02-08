@@ -7,7 +7,7 @@ namespace Fernet\Tests\Core;
 use Fernet\Core\Exception;
 use Fernet\Core\Routes;
 use Fernet\Framework;
-use PHPUnit\Framework\TestCase;
+use Fernet\Tests\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 class RoutesTest extends TestCase
@@ -50,11 +50,10 @@ class RoutesTest extends TestCase
     {
         $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
         $routes = new Routes($framework);
-        $request = new Request();
-        $request = $request->duplicate(null, null, null, null, null, ['REQUEST_URI' => '/about']);
+        $request = $this->createRequest('/about');
         self::assertEquals('Menu.handleAbout', $routes->dispatch($request));
 
-        $request = $request->duplicate(null, null, null, null, null, ['REQUEST_URI' => '/some/foo/bar/page']);
+        $request = $this->createRequest('/some/foo/bar/page');
         self::assertEquals('FooBar.renderPage', $routes->dispatch($request));
 
         $request = new Request();
@@ -65,8 +64,7 @@ class RoutesTest extends TestCase
     {
         $framework = Framework::setUp();
         $routes = new Routes($framework);
-        $request = (new Request())->duplicate(null, null, null, null, null, ['REQUEST_URI' => '/hello-component/some-handler']);
+        $request = $this->createRequest('/hello-component/some-handler');
         self::assertEquals('HelloComponent.someHandler', $routes->dispatch($request));
     }
-
 }

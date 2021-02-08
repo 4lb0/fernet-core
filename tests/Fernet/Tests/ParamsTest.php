@@ -4,7 +4,6 @@ namespace Fernet\Tests;
 
 use DateTime;
 use Fernet\Params;
-use PHPUnit\Framework\TestCase;
 use stdClass;
 
 class ParamsTest extends TestCase

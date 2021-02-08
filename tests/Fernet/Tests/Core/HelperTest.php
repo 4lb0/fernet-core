@@ -1,11 +1,9 @@
 <?php
 
-
 namespace Fernet\Tests\Core;
 
-
 use Fernet\Core\Helper;
-use PHPUnit\Framework\TestCase;
+use Fernet\Tests\TestCase;
 
 class HelperTest extends TestCase
 {
@@ -35,7 +33,6 @@ class HelperTest extends TestCase
 
     public function testHyphen(): void
     {
-
         self::assertEquals(
             'hello-world',
             Helper::hyphen('HelloWorld')

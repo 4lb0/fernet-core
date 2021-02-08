@@ -8,38 +8,10 @@ use Fernet\Core\NotFoundException;
 use Fernet\Core\Router;
 use Fernet\Core\Routes;
 use Fernet\Framework;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
-use PHPUnit\Framework\TestCase;
-use Stringable;
-use Symfony\Component\HttpFoundation\Request;
+use Fernet\Tests\TestCase;
 
 class RouterTest extends TestCase
 {
-    private function createRequest(string $url = '/'): Request
-    {
-        return (new Request())->duplicate(null, null, null, null, null, ['REQUEST_URI' => $url]);
-    }
-
-    private function createNullLogger(): Logger
-    {
-        $log = new Logger('test');
-        $log->setHandlers([new NullHandler()]);
-
-        return $log;
-    }
-
-    private function createComponent(?string $content = null): Stringable
-    {
-        if (!$content) {
-            $content = substr(str_shuffle(md5(microtime())), 0, 10);
-        }
-        $component = $this->createMock(Stringable::class);
-        $component->method('__toString')->willReturn($content);
-
-        return $component;
-    }
-
     public function testDefaultRoute(): void
     {
         $routes = $this->createMock(Routes::class);
