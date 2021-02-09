@@ -49,7 +49,7 @@ class Router
         return $response;
     }
 
-    private function getArgs(): array
+    public function getArgs(): array
     {
         // TODO Change hardcoded string to constant or config
         $params = $this->request->query->get('fernet-params', []);

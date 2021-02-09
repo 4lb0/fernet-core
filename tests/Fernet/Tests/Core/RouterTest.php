@@ -33,4 +33,35 @@ class RouterTest extends TestCase
         );
         $router->route($this->createComponent());
     }
+
+    public function testBind(): void
+    {
+        $framework = Framework::getInstance();
+        $request = $this->createRequest();
+        $request->request->set('fernet-bind', ['foo.bar' => 'foobar']);
+        $router = new Router(
+            $request,
+            $this->createNullLogger(),
+            new Routes($framework)
+        );
+        $component = $this->createComponent();
+        $component->foo = (object) ['bar' => null];
+        $router->bind($component);
+        self::assertEquals('foobar', $component->foo->bar);
+    }
+
+    public function testGetArgs(): void
+    {
+        $framework = Framework::getInstance();
+        $request = $this->createRequest();
+        $request->query->set('fernet-params', ['someConfig' => serialize(false)]);
+        $request->query->set('other-regular-query', 'value');
+        $router = new Router(
+            $request,
+            $this->createNullLogger(),
+            new Routes($framework)
+        );
+        self::assertCount(3, $router->getArgs());
+    }
+
 }
