@@ -3,5 +3,6 @@ vendor/
 .idea/
 .php_cs.cache
 phpunit.xml
+build/
 
 !tests/fixtures/vendor/
