@@ -14,10 +14,12 @@ class PluginLoader
     private Logger $log;
     private string $configFile;
     private string $rootPath;
+    private Framework $framework;
 
     public function __construct(Framework $framework, Logger $log)
     {
         $this->log = $log;
+        $this->framework = $framework;
         $this->configFile = $framework->configFile('pluginFile');
         $this->rootPath = (string) $framework->getConfig('rootPath');
     }
@@ -31,7 +33,7 @@ class PluginLoader
         // TODO: Cache warm up
         foreach ($plugins as $pluginName => $class) {
             $this->log->debug("Load plugin $pluginName");
-            (new $class())->setUp($this);
+            (new $class())->setUp($this->framework);
         }
     }
 
@@ -63,7 +65,7 @@ class PluginLoader
                 $plugins[$pluginName] = $class;
                 // TODO: When I should run the install?
                 $this->log->debug("Install plugin $pluginName");
-                (new $class())->install($this);
+                (new $class())->install($this->framework);
             } else {
                 throw new Exception("Plugin \"$pluginName\" Bootstrap class should extend ".PluginBootstrap::class);
             }
