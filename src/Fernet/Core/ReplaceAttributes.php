@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fernet\Core;
 
 use Fernet\Framework;
+use Stringable;
 use function get_class;
 
 class ReplaceAttributes
@@ -20,7 +21,7 @@ class ReplaceAttributes
         $this->routes = $routes;
     }
 
-    public function replace(string $content, object $component): string
+    public function replace(string $content, Stringable $component): string
     {
         $class = get_class($component);
         $classWithoutNamespace = $class;
