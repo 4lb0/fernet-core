@@ -15,18 +15,44 @@ class Routes
 {
     private const DEFAULT_ROUTE = '/{component}/{method}';
     private const DEFAULT_ROUTE_NAME = '__default_fernet_route';
-    private Dispatcher $dispatcher;
+    private ?Dispatcher $dispatcher = null;
     private array $routes = [];
+    private string $configFile;
 
     /**
      * Routes constructor.
-     *
+     * @param Framework $framework
+     */
+    public function __construct(Framework $framework)
+    {
+        $this->configFile = $framework->configFile('routingFile');
+    }
+
+    public function setDispatcher(Dispatcher $dispatcher): void
+    {
+        $this->dispatcher = $dispatcher;
+    }
+
+    /**
      * @throws Exception
      */
-    public function __construct()
+    public function getDispatcher(): Dispatcher
+    {
+        if (!$this->dispatcher) {
+            $this->setDispatcher($this->defaultDispatcher());
+        }
+
+        return $this->dispatcher;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function defaultDispatcher(): Dispatcher
     {
         $routes = $this->getRoutes();
-        $this->dispatcher = simpleDispatcher(function (RouteCollector $routeCollection) use ($routes) {
+
+        return simpleDispatcher(function (RouteCollector $routeCollection) use ($routes) {
             foreach ($routes as $route => $handler) {
                 $routeCollection->addRoute(['GET', 'POST'], $route, $handler);
             }
@@ -37,15 +63,15 @@ class Routes
     /**
      * @throws Exception
      */
-    private function getRoutes(): array
+    public function getRoutes(): array
     {
-        $filename = Framework::configFile('routingFile');
-        if (!file_exists($filename)) {
+        // TODO Add cache here
+        if (!file_exists($this->configFile)) {
             return [];
         }
 
         try {
-            $routes = json_decode(file_get_contents($filename), true, 512, JSON_THROW_ON_ERROR);
+            $routes = json_decode(file_get_contents($this->configFile), true, 512, JSON_THROW_ON_ERROR);
             foreach ($routes as $route => $handler) {
                 [$component, $method] = explode('.', $handler);
                 $this->routes[$component][$method] = $route;
@@ -53,17 +79,27 @@ class Routes
 
             return $routes;
         } catch (JsonException $e) {
-            throw new Exception("There was an error parsing the JSON in your routing file \"$filename\": ".$e->getMessage());
+            throw new Exception("There was an error parsing the JSON in your routing file \"$this->configFile\": ".$e->getMessage());
         }
     }
 
+    /**
+     * @param string $component
+     * @param string $method
+     * @param array|null $args
+     * @return string|null
+     * @throws Exception
+     */
     public function get(string $component, string $method, ?array $args = null): ?string
     {
+        if (!$this->routes) {
+            $this->defaultDispatcher();
+        }
         if (isset($this->routes[$component][$method])) {
             $route = $this->routes[$component][$method];
             if ($args) {
                 foreach ($args as $arg => $value) {
-                    $route = str_replace('{'.$arg.'}', $value, $route);
+                    $route = str_replace('{'.$arg.'}', urlencode((string) $value), $route);
                 }
             }
 
@@ -73,10 +109,15 @@ class Routes
         return null;
     }
 
+    /**
+     * @param Request $request
+     * @return string|null
+     * @throws Exception
+     */
     public function dispatch(Request $request): ?string
     {
         $defaults = [Dispatcher::NOT_FOUND, null, []];
-        [$routeFound, $handler, $vars] = $this->dispatcher->dispatch($request->getMethod(), $request->getPathInfo()) + $defaults;
+        [$routeFound, $handler, $vars] = $this->getDispatcher()->dispatch($request->getMethod(), $request->getPathInfo()) + $defaults;
         if (Dispatcher::FOUND !== $routeFound) {
             return null;
         }

@@ -3,6 +3,7 @@
 namespace Fernet\Core;
 
 use Monolog\Logger;
+use Stringable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,7 +27,7 @@ class Router
      * @throws Exception
      * @throws NotFoundException
      */
-    public function route($defaultComponent): Response
+    public function route(Stringable | string $defaultComponent): Response
     {
 
         $response = false;
@@ -48,7 +49,7 @@ class Router
         return $response;
     }
 
-    private function getArgs(): array
+    public function getArgs(): array
     {
         // TODO Change hardcoded string to constant or config
         $params = $this->request->query->get('fernet-params', []);
@@ -70,7 +71,7 @@ class Router
         return $args;
     }
 
-    private function bind(object $component): void
+    public function bind(Stringable $component): void
     {
         // TODO Change hardcoded string to constant or config
         foreach ($this->request->request->get('fernet-bind', []) as $key => $value) {

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Fernet\Core;
 
 use Fernet\Framework;
+use Stringable;
 use function get_class;
-use JsonException;
 
 class ReplaceAttributes
 {
@@ -21,7 +21,7 @@ class ReplaceAttributes
         $this->routes = $routes;
     }
 
-    public function replace(string $content, object $component): string
+    public function replace(string $content, Stringable $component): string
     {
         $class = get_class($component);
         $classWithoutNamespace = $class;
@@ -39,15 +39,17 @@ class ReplaceAttributes
             if (preg_match_all($regexp, $content, $matches)) {
                 foreach ($matches[1] as $i => $key) {
                     $raws[] = $matches[1][$i];
-                    $type = $matches[2][$i];
                     $definition = $matches[4][$i];
                     $args = null;
                     if (preg_match('/(.+)\((.*)\)$/', $definition, $match)) {
                         [, $definition, $args] = $match;
                         $args = @unserialize(html_entity_decode($args), ['allowed_classes' => true]);
                     }
-                    $url = $this->routes->get($classWithoutNamespace, $definition, $args);
-                    // TODO Refactor this mess
+                    try {
+                        $url = $this->routes->get($classWithoutNamespace, $definition, $args);
+                    } catch (Exception) {
+                        $url = false;
+                    }
                     if (!$url) {
                         $url = Framework::config('urlPrefix').Helper::hyphen($classWithoutNamespace).'/'.Helper::hyphen($definition);
                         if ($args) {
@@ -58,7 +60,7 @@ class ReplaceAttributes
                             $url .= '?'.htmlentities(http_build_query(['fernet-params' => $param]));
                         }
                     }
-                    $contents[] = sprintf($attr, $url).$this->addJs($type, $class, $definition);
+                    $contents[] = sprintf($attr, $url);
                 }
             }
         }
@@ -68,14 +70,13 @@ class ReplaceAttributes
             if (preg_match_all($regexp, $content, $matches)) {
                 foreach ($matches[1] as $i => $key) {
                     $raws[] = $matches[1][$i];
-                    $type = $matches[2][$i];
                     $definition = $matches[4][$i];
                     $value = $component;
                     $vars = explode('.', $definition);
                     foreach ($vars as $var) {
                         $value = $value->$var;
                     }
-                    $contents[] = sprintf($attr, "fernet-bind[$definition]", $value).$this->addJs($type, $class, $definition);
+                    $contents[] = sprintf($attr, "fernet-bind[$definition]", $value);
                 }
             }
         }
@@ -84,30 +85,16 @@ class ReplaceAttributes
                 $raws[] = $matches[0][$i];
                 $before = $matches[1][$i];
                 $after = $matches[6][$i];
-                $type = 'textearea';
                 $definition = $matches[4][$i];
                 $value = $component;
                 $vars = explode('.', $definition);
                 foreach ($vars as $var) {
                     $value = $value->$var;
                 }
-                $contents[] = "<textarea{$before} name=\"fernet-bind[$definition]\"".$this->addJs($type, $class, $definition)."{$after}>$value";
+                $contents[] = "<textarea$before name=\"fernet-bind[$definition]\"$after>$value";
             }
         }
 
         return str_replace($raws, $contents, $content);
-    }
-
-    public function addJs($type, $class, $definition): string
-    {
-        try {
-            return Framework::config('enableJs') ?
-                " fernet-$type=".json_encode("$class.$definition", JSON_THROW_ON_ERROR) :
-                '';
-        } catch (JsonException $e) {
-            Framework::getInstance()->getLog()->error("Error on converting \"$class.$definition\" to JSON");
-
-            return '';
-        }
     }
 }

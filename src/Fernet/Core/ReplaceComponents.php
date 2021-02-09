@@ -16,7 +16,6 @@ class ReplaceComponents
     /**
      * @param string $content
      * @return string
-     * @throws Exception
      * @throws NotFoundException
      */
     public function replace(string $content): string

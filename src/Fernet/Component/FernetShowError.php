@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Fernet\Component;
 
 use Fernet\Framework;
-use Fernet\Core\Exception;
 use Throwable;
 
 class FernetShowError
 {
     private const TITLE = 'Error on Fernet';
     public Throwable $error;
-    public bool $preventWrapper = true;
     private string $rootPath;
 
     public function __construct(Framework $fernet)
@@ -23,7 +21,7 @@ class FernetShowError
     private function path(string $path, int $line): string
     {
         $fullPath = $path;
-        if (0 === strpos($path, $this->rootPath)) {
+        if (str_starts_with($path, $this->rootPath)) {
             $path = substr($path, strlen($this->rootPath));
         }
         $url = "subl://$fullPath:$line";
@@ -33,7 +31,8 @@ class FernetShowError
 
     public function __toString(): string
     {
-        ob_start(); ?>
+        try {
+            ob_start(); ?>
         <html lang="en">
         <head>
             <title><?php echo self::TITLE; ?>:  <?php echo $this->error->getMessage(); ?></title>
@@ -77,6 +76,11 @@ class FernetShowError
         </body>
         </html>
 <?php
+        } catch (Throwable $error) {
+            ob_end_clean();
+            throw $error;
+        }
+
         return ob_get_clean();
     }
 }

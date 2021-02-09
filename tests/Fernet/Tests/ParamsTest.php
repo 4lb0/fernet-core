@@ -4,7 +4,6 @@ namespace Fernet\Tests;
 
 use DateTime;
 use Fernet\Params;
-use PHPUnit\Framework\TestCase;
 use stdClass;
 
 class ParamsTest extends TestCase
@@ -30,10 +29,5 @@ class ParamsTest extends TestCase
            $object,
            Params::get($key)
        );
-    }
-
-    public function testEvent(): void
-    {
-        self::markTestSkipped('Current implementation of event is risky, we should refactor');
     }
 }

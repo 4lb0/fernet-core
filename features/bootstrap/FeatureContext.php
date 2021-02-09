@@ -23,9 +23,10 @@ class FeatureContext implements Context
      */
     public function __construct()
     {
-        $framework = Framework::getInstance();
-        $framework->setConfig('enableJs', false);
-        $framework->setConfig('logPath', '/dev/null');
+        Framework::setUp([
+            'logPath' => '//dev/null',
+            'enableJs' => false,
+        ]);
     }
 
     /**
@@ -59,6 +60,22 @@ class FeatureContext implements Context
     public function theOutputIsAnError(int $status)
     {
         assertEquals($status, $this->response->getStatusCode());
+    }
+
+    /**
+     * @Given /^the link "([^"]*)" is clicked$/
+     */
+    public function theLinkIsClicked(string $link)
+    {
+        throw new \Behat\Behat\Tester\Exception\PendingException();
+    }
+
+    /**
+     * @Then /^the I can see the text "([^"]*)"$/
+     */
+    public function theICanSeeTheText(string $text)
+    {
+        throw new \Behat\Behat\Tester\Exception\PendingException();
     }
 
 }

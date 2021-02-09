@@ -6,8 +6,6 @@ namespace Fernet\Component;
 
 class FernetStylesheet
 {
-    public bool $preventWrapper = true;
-
     public function __toString(): string
     {
         return <<<EOCSS

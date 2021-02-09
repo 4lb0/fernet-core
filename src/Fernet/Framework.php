@@ -11,13 +11,13 @@ use Fernet\Component\FernetShowError;
 use Fernet\Core\ComponentElement;
 use Fernet\Core\Helper;
 use Fernet\Core\NotFoundException;
-use Fernet\Core\PluginBootstrap;
+use Fernet\Core\PluginLoader;
 use Fernet\Core\Router;
-use JsonException;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Stringable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -26,7 +26,6 @@ final class Framework
 {
     private const DEFAULT_CONFIG = [
         'devMode' => false,
-        'enableJs' => true,
         'urlPrefix' => '/',
         'componentNamespaces' => [
             'App\\Component',
@@ -48,7 +47,6 @@ final class Framework
      * Prefix used in env file.
      */
     private const DEFAULT_ENV_PREFIX = 'FERNET_';
-    private const PLUGIN_FILE = 'plugin.php';
 
     private Container $container;
     private Logger $log;
@@ -77,7 +75,7 @@ final class Framework
     {
         $configs = array_merge(self::DEFAULT_CONFIG, $configs);
         foreach ($_ENV as $key => $value) {
-            if (0 === strpos($key, $envPrefix)) {
+            if (str_starts_with($key, $envPrefix)) {
                 $key = substr($key, strlen($envPrefix));
                 $key = Helper::camelCase($key);
                 $configs[$key] = is_bool($configs[$key]) ?
@@ -86,17 +84,7 @@ final class Framework
             }
         }
         self::$instance = new self($configs);
-        try {
-            self::$instance->loadPlugins();
-        } catch (Throwable $error) {
-            self::$instance->getLog()->error($error->getMessage());
-            $response = new Response(
-                self::$instance->showError($error),
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
-            $response->send();
-            exit;
-        }
+        self::$instance->getContainer()->get(PluginLoader::class)->loadPlugins();
 
         return self::$instance;
     }
@@ -115,11 +103,9 @@ final class Framework
         return self::getInstance()->getConfig($name);
     }
 
-    public static function configFile(string $name): string
+    public function configFile(string $name): string
     {
-        $framework = self::getInstance();
-
-        return $framework->getConfig('rootPath').DIRECTORY_SEPARATOR.$framework->getConfig($name);
+        return $this->getConfig('rootPath').DIRECTORY_SEPARATOR.$this->getConfig($name);
     }
 
     public function getContainer(): Container
@@ -138,7 +124,15 @@ final class Framework
         return $this->configs[$config];
     }
 
-    public function setConfig(string $config, $value): self
+    /**
+     * @Framework
+     *
+     * @param string $config Config name
+     * @param mixed  $value  Config value
+     *
+     * @return Framework
+     */
+    public function setConfig(string $config, mixed $value): self
     {
         $this->configs[$config] = $value;
 
@@ -152,6 +146,14 @@ final class Framework
         return $this;
     }
 
+    /**
+     * @Framework
+     *
+     * @param string   $event    Event to be subscribed
+     * @param callable $callback Callback
+     *
+     * @return Framework
+     */
     public function subscribe(string $event, callable $callback): self
     {
         $this->events[$event][] = $callback;
@@ -167,58 +169,7 @@ final class Framework
         }
     }
 
-    /**
-     * @throws Core\Exception
-     */
-    public function loadPlugins(): void
-    {
-        $plugins = $this->warmUpPlugins();
-        // TODO: Cache warm up
-        foreach ($plugins as $pluginName => $class) {
-            $this->getLog()->debug("Load plugin $pluginName");
-            (new $class())->setUp($this);
-        }
-    }
-
-    /**
-     * @throws Core\Exception
-     */
-    public function warmUpPlugins(): array
-    {
-        $filepath = self::configFile('pluginFile');
-        if (!file_exists($filepath)) {
-            return [];
-        }
-        $plugins = [];
-        try {
-            $list = json_decode(file_get_contents($filepath), true, 512, JSON_THROW_ON_ERROR);
-            if (!is_array($plugins)) {
-                throw new Core\Exception("Plugin file \"$filepath\" should contain an array");
-            }
-            foreach ($list as $pluginName) {
-                $file = $this->getConfig('rootPath')."/vendor/$pluginName/".self::PLUGIN_FILE;
-                if (!file_exists($file)) {
-                    throw new Core\Exception("Plugin \"$pluginName\" is not a valid plugin");
-                }
-                $class = require $file;
-                if (class_exists($class) && is_subclass_of($class, PluginBootstrap::class)) {
-                    $this->getLog()->debug("Warm up plugin $pluginName");
-                    $plugins[$pluginName] = $class;
-                    // TODO: When I should run the install?
-                    $this->getLog()->debug("Install plugin $pluginName");
-                    (new $class())->install($this);
-                } else {
-                    throw new Core\Exception("Plugin \"$pluginName\" Bootstrap class should extend ".PluginBootstrap::class);
-                }
-            }
-        } catch (JsonException $e) {
-            throw new Core\Exception("Plugin file \"$filepath\" is not a valid JSON");
-        }
-
-        return $plugins;
-    }
-
-    public function run($component, ?Request $request = null): Response
+    public function run(Stringable | string $component, ?Request $request = null): Response
     {
         try {
             $this->dispatch('onLoad', [$this]);
@@ -237,12 +188,6 @@ final class Framework
             return new Response(
                 $this->showError($notFoundException, 'error404'),
                 Response::HTTP_NOT_FOUND
-            );
-        } catch (Exception $exception) {
-            $this->log->error($exception->getMessage());
-            $response = new Response(
-                $this->showError($exception),
-                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         } catch (Throwable $error) {
             $this->log->error($error->getMessage());
@@ -270,10 +215,5 @@ final class Framework
 
             return 'Error: '.$error->getMessage();
         }
-    }
-
-    public function getLog(): Logger
-    {
-        return $this->log;
     }
 }
