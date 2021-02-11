@@ -138,3 +138,28 @@ Feature: Components
   Scenario: When you run a not found component you get a 404 error.
     When the framework is run with component "ThisComponentNotExists"
     Then the output is an error 404
+
+  Scenario: Creating a component with a component in a namespace
+    Given the component defined in the class
+    """
+    namespace MyNamespace;
+    class FooBarText
+    {
+      public function __toString(): string
+      {
+        return '<p>FooBar</p>';
+      }
+    }
+    """
+    And the component defined in the class
+    """
+    class ComponentWithNamespace
+    {
+      public function __toString(): string
+      {
+        return '<div><MyNamespace.FooBarText /></div>';
+      }
+    }
+    """
+    When the framework is run with component "ComponentWithNamespace"
+    Then the output is '<div><p>FooBar</p></div>'
