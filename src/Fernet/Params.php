@@ -23,7 +23,7 @@ class Params
     {
         $outputParams = [];
         foreach ($params as $key => $value) {
-            $class = get_class($value);
+            $class = is_object($value) ? get_class($value) : strtolower(gettype($value));
             $name = static::set($class, $value);
             $outputParams[] = "$key={{$name}}";
         }

@@ -55,6 +55,11 @@ class Router
         $params = $this->request->query->get('fernet-params', []);
         $this->request->query->remove('fernet-params');
         $args = $this->request->query->all();
+        foreach ($args as $key => $value) {
+            if (strpos($key, '__fernet') !== false) {
+                unset($args[$key]);
+            }
+        }
         foreach ($params as $param) {
             // FIXME This is completely unsafe, refactor asap
             $value = @unserialize($param, ['allowed_classes' => true]);
@@ -68,7 +73,7 @@ class Router
         $this->log->debug('Arguments passed to component event', [$args]);
         $args[] = $this->request;
 
-        return $args;
+        return array_values($args);
     }
 
     public function bind(Stringable $component): void

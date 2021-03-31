@@ -27,7 +27,8 @@
         "php-coveralls/php-coveralls": "^2.4"
     },
     "autoload": {
-        "psr-4": {"Fernet\\": "src/Fernet"}
+        "psr-4": {"Fernet\\": "src/Fernet"},
+        "files": ["src/functions.php"]
     },
     "autoload-dev": {
         "psr-4": {"Fernet\\Tests\\": "tests/Fernet/Tests"}

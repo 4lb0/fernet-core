@@ -47,9 +47,6 @@ class ComponentElement
     }
 
     /**
-     * @param string $class
-     * @return Stringable
-     *
      * @throws NotFoundException
      */
     private function getObject(string $class): Stringable
@@ -72,7 +69,6 @@ class ComponentElement
      * @param $method
      * @param $args
      *
-     * @return mixed
      * @throws NotFoundException
      */
     public function call($method, $args): mixed
@@ -84,13 +80,28 @@ class ComponentElement
         return call_user_func_array([$this->component, $method], $args);
     }
 
+    private function _render(): string
+    {
+        $content = (string) $this->component;
+        $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
+        return $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
+    }
+
     public function render(): string
     {
         $class = get_class($this->component);
-        $this->getFromContainer(Logger::class)->debug("Rendering \"$class\"");
-        $content = (string) $this->component;
-        $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
-        $content = $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
+        $log = $this->getFromContainer(Logger::class);
+        $log->debug("Start rendering \"$class\"");
+        $lastEvent = Events::getLastEvent();
+        $content = $this->_render();
+        $log->debug("Finish rendering \"$class\"");
+        if (isset($this->component->dirtyState) && $this->component->dirtyState) {
+            $log->debug("Start rendering again because state is dirty \"$class\"");
+            Events::restore($lastEvent);
+            // Restore the events because we're going to recreate them
+            $content = $this->_render();
+            $log->debug("Finish rendering dirty \"$class\"");
+        }
 
         return $content;
     }

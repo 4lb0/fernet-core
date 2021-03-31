@@ -17,7 +17,7 @@ Feature: Event
       public function __toString(): string
       {
         $text = $this->clicked ? 'On' : 'Off';
-        return "<html><body><p>$text</p><a onClick='handleClick'>Toggle</a></body></html>";
+        return "<html><body><p>$text</p><a @onClick='handleClick'>Toggle</a></body></html>";
       }
     }
     """
