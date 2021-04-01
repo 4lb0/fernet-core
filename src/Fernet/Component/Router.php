@@ -6,7 +6,7 @@ namespace Fernet\Component;
 
 use Fernet\Core\ComponentElement;
 use Fernet\Core\NotFoundException;
-use League\Container\Container;
+use Fernet\Framework;
 use Stringable;
 
 class Router
@@ -15,9 +15,9 @@ class Router
 
     private string | Stringable $route;
 
-    public function __construct(Container $container)
+    public function __construct(Framework $framework)
     {
-        $container->add(self::class, $this);
+        $framework->getContainer()->add(self::class, $this);
     }
 
     public function setRoute(string | Stringable $component): void

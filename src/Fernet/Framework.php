@@ -61,9 +61,8 @@ final class Framework
     private function __construct(array $configs)
     {
         $this->container = new Container();
-        $this->container->delegate((new ReflectionContainer()));
+        $this->container->delegate((new ReflectionContainer())->cacheResolutions());
         $this->container->add(self::class, $this);
-        $this->container->add(Container::class, $this->container);
         $this->configs = $configs;
 
         $logger = new Logger($configs['logName']);

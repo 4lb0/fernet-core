@@ -48,7 +48,7 @@ class FernetShowError
             </h1>
             <h2><?php echo $this->error->getMessage(); ?></h2>
 
-            <?php if ($this->error instanceof \Exception && $this->error->getLink()) { ?>
+            <?php if ($this->error instanceof Exception && $this->error->getLink()) { ?>
             <p>For more help go to <a href="<?php echo $this->error->getLink(); ?>"><?php echo $this->error->getLink(); ?></a></p>
             <?php } ?> 
             <p>

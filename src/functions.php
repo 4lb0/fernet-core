@@ -12,7 +12,8 @@ function params(...$params): string
 
 function onClick($callback, $unique = null): string
 {
-    return Events::onClick($callback, $unique);
+    $events = Framework::getInstance()->getContainer()->get(Events::class);
+    return $events->onClick($callback, $unique);
 }
 
 function linkTo($component, $method = 'route', ...$params)
