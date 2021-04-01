@@ -14,6 +14,7 @@ use Stringable;
 class ComponentElement
 {
     private Stringable $component;
+    private string $childContent;
 
     /**
      * ComponentElement constructor.
@@ -32,7 +33,7 @@ class ComponentElement
         foreach ($params as $key => $value) {
             $component->$key = $value;
         }
-        $component->childContent = $childContent;
+        $this->childContent = $childContent;
         $this->component = $component;
     }
 
@@ -80,10 +81,13 @@ class ComponentElement
         return call_user_func_array([$this->component, $method], $args);
     }
 
-    private function _render(): string
+    private function _render(string $content): string
     {
-        $content = (string) $this->component;
+        if (!trim($content)) {
+            return $content;
+        }
         $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
+
         return $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
     }
 
@@ -94,13 +98,15 @@ class ComponentElement
         $events = $this->getFromContainer(Events::class);
         $log->debug("Start rendering \"$class\"");
         $lastEvent = $events->getLastEvent();
-        $content = $this->_render();
+        // FIXME Process customs tags inside childContent, the bug is in the tag regexp
+        $this->component->childContent = $this->_render($this->childContent);
+        $content = $this->_render($this->component->__toString());
         $log->debug("Finish rendering \"$class\"");
         if (isset($this->component->dirtyState) && $this->component->dirtyState) {
             $log->debug("Start rendering again because state is dirty \"$class\"");
             $events->restore($lastEvent);
             // Restore the events because we're going to recreate them
-            $content = $this->_render();
+            $content = $this->_render($this->component->__toString());
             $log->debug("Finish rendering dirty \"$class\"");
         }
 
