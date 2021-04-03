@@ -1,21 +1,23 @@
 <?php
+
 declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Fernet\Browser;
 use Fernet\Framework;
-use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Component\HttpFoundation\Response;
+use Monolog\Logger;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertStringContainsString;
-use Monolog\Logger;
+use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Defines application features from the specific context.
  */
 class FeatureContext implements Context
 {
+    private const LOG_FILE = 'fernet_features.log';
     private Response $response;
     private Browser $browser;
     private ?Crawler $crawler;
@@ -29,13 +31,15 @@ class FeatureContext implements Context
      */
     public function __construct()
     {
-        file_put_contents('/tmp/fernet.log', ''); // clean log
+        $logFile = sys_get_temp_dir().DIRECTORY_SEPARATOR.static::LOG_FILE;
+        file_put_contents($logFile, ''); // clean log
         Framework::setUp([
-            'logPath' => '/tmp/fernet.log',
+            'logPath' => $logFile,
             'logLevel' => Logger::DEBUG,
             'enableJs' => false,
             'devMode' => false,
         ]);
+        $this->browser = new Browser();
     }
 
     /**
@@ -66,7 +70,7 @@ class FeatureContext implements Context
     /**
      * @Then /^the output is an error (\d+)$/
      */
-    public function theOutputIsAnError(int $status)
+    public function theOutputIsAnError(int $status): void
     {
         assertEquals($status, $this->response->getStatusCode());
     }
@@ -74,18 +78,16 @@ class FeatureContext implements Context
     /**
      * @When /^the main component is "([^"]*)" and we navigate to "([^"]*)"$/
      */
-    public function theMainComponentIsAndWeNavigateTo($component, $url)
+    public function theMainComponentIsAndWeNavigateTo($component, $url): void
     {
-        $this->browser = new Browser();
         $this->browser->setMainComponent($component);
         $this->crawler = $this->browser->request('GET', $url);
-        file_put_contents('/tmp/asd.html', $this->crawler->html());
     }
 
     /**
      * @Given /^the link "([^"]*)" is clicked$/
      */
-    public function theLinkIsClicked(string $link)
+    public function theLinkIsClicked(string $link): void
     {
         $this->crawler = $this->browser->clickLink($link);
     }
@@ -93,10 +95,9 @@ class FeatureContext implements Context
     /**
      * @Then /^I can see the text "([^"]*)" on "([^"]*)"$/
      */
-    public function theICanSeeTheText(string $text, string $selector)
+    public function theICanSeeTheText(string $text, string $selector): void
     {
         $html = $this->crawler->filter($selector)->html();
         assertStringContainsString($text, $html);
     }
-
 }
