@@ -22,13 +22,11 @@ class ComponentElement
      * @param mixed  $classOrObject Object or the name of the component
      * @param array  $params        The params the object need to be created
      * @param string $childContent  The HTML child content if applied
-     *
-     * @throws NotFoundException
      */
     public function __construct(Stringable | string $classOrObject, array $params = [], string $childContent = '')
     {
         $component = is_string($classOrObject) ?
-            $this->getObject($classOrObject) :
+            $this->getFromContainer(ComponentFactory::class)->create($classOrObject) :
             $classOrObject;
         foreach ($params as $key => $value) {
             $component->$key = $value;
@@ -47,33 +45,17 @@ class ComponentElement
         return Framework::getInstance()->getContainer()->get($class);
     }
 
-    /**
-     * @throws NotFoundException
-     */
-    private function getObject(string $class): Stringable
-    {
-        // TODO Add filesystem or memory cache to the string to object
-        if (class_exists($class)) {
-            return clone $this->getFromContainer($class);
-        }
-        $namespaces = Framework::config('componentNamespaces');
-        foreach ($namespaces as $namespace) {
-            $classWithNamespace = $namespace.'\\'.$class;
-            if (class_exists($classWithNamespace)) {
-                return clone $this->getFromContainer($classWithNamespace);
-            }
-        }
-        throw new NotFoundException(sprintf('Component "%s" not defined in ["%s"]', $class, implode('", "', $namespaces)));
-    }
 
     /**
      * @param $method
      * @param $args
      *
+     * @return mixed
      * @throws NotFoundException
      */
     public function call($method, $args): mixed
     {
+        $this->getFromContainer(ComponentFactory::class)->add($this->component);
         if (!method_exists($this->component, $method)) {
             throw new NotFoundException(sprintf('Method "%s" not found in component "%s"', $method, get_class($this->component)));
         }

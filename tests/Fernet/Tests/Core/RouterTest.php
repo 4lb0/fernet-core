@@ -18,8 +18,8 @@ class RouterTest extends TestCase
         $request = $this->createRequest();
         $routes->expects(self::once())->method('dispatch')->with(self::equalTo($request));
         $html = '<html lang="en"><body>Default route</body></html>';
-        $router = new Router($request, $this->createNullLogger(), $routes);
-        self::assertEquals($html, $router->route($this->createComponent($html))->getContent());
+        $router = new Router($this->createNullLogger(), $routes);
+        self::assertEquals($html, $router->route($this->createComponent($html), $request)->getContent());
     }
 
     public function testRouteNotFound(): void
@@ -27,11 +27,10 @@ class RouterTest extends TestCase
         $this->expectException(NotFoundException::class);
         $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
         $router = new Router(
-            $this->createRequest('/about'),
             $this->createNullLogger(),
-            new Routes($framework)
+            new Routes($framework, $this->createNullLogger())
         );
-        $router->route($this->createComponent());
+        $router->route($this->createComponent(), $this->createRequest('/about'));
     }
 
     public function testBind(): void
@@ -40,13 +39,12 @@ class RouterTest extends TestCase
         $request = $this->createRequest();
         $request->request->set('fernet-bind', ['foo.bar' => 'foobar']);
         $router = new Router(
-            $request,
             $this->createNullLogger(),
-            new Routes($framework)
+            new Routes($framework, $this->createNullLogger())
         );
         $component = $this->createComponent();
         $component->foo = (object) ['bar' => null];
-        $router->bind($component);
+        $router->bind($component, $request);
         self::assertEquals('foobar', $component->foo->bar);
     }
 
@@ -57,11 +55,10 @@ class RouterTest extends TestCase
         $request->query->set('fernet-params', ['someConfig' => serialize(false)]);
         $request->query->set('other-regular-query', 'value');
         $router = new Router(
-            $request,
             $this->createNullLogger(),
-            new Routes($framework)
+            new Routes($framework, $this->createNullLogger())
         );
-        self::assertCount(3, $router->getArgs());
+        self::assertCount(3, $router->getArgs($request));
     }
 
 }

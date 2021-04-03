@@ -9,6 +9,7 @@ use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 use Fernet\Framework;
 use JsonException;
+use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 
 class Routes
@@ -18,14 +19,15 @@ class Routes
     private ?Dispatcher $dispatcher = null;
     private array $routes = [];
     private string $configFile;
+    private Logger $log;
 
     /**
      * Routes constructor.
-     * @param Framework $framework
      */
-    public function __construct(Framework $framework)
+    public function __construct(Framework $framework, Logger $logger)
     {
         $this->configFile = $framework->configFile('routingFile');
+        $this->log = $logger;
     }
 
     public function setDispatcher(Dispatcher $dispatcher): void
@@ -50,6 +52,7 @@ class Routes
      */
     public function defaultDispatcher(): Dispatcher
     {
+        $this->log->debug('Using default routing dispatcher');
         $routes = $this->getRoutes();
 
         return simpleDispatcher(function (RouteCollector $routeCollection) use ($routes) {
@@ -67,6 +70,8 @@ class Routes
     {
         // TODO Add cache here
         if (!file_exists($this->configFile)) {
+            $this->log->debug('No routing file');
+
             return [];
         }
 
@@ -79,15 +84,13 @@ class Routes
 
             return $routes;
         } catch (JsonException $e) {
-            throw new Exception("There was an error parsing the JSON in your routing file \"$this->configFile\": ".$e->getMessage());
+            $message = "Error parsing the JSON in your routing file \"$this->configFile\": ".$e->getMessage();
+            $this->log->error($message);
+            throw new Exception($message);
         }
     }
 
     /**
-     * @param string $component
-     * @param string $method
-     * @param array|null $args
-     * @return string|null
      * @throws Exception
      */
     public function get(string $component, string $method, ?array $args = null): ?string
@@ -110,8 +113,6 @@ class Routes
     }
 
     /**
-     * @param Request $request
-     * @return string|null
      * @throws Exception
      */
     public function dispatch(Request $request): ?string

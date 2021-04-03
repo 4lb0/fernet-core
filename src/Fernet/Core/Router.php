@@ -9,13 +9,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class Router
 {
-    private Request $request;
     private Logger $log;
     private Routes $routes;
 
-    public function __construct(Request $request, Logger $log, Routes $routes)
+    public function __construct(Logger $log, Routes $routes)
     {
-        $this->request = $request;
         $this->log = $log;
         $this->routes = $routes;
     }
@@ -23,23 +21,23 @@ class Router
     /**
      * @param $defaultComponent
      *
-     * @return Response
      * @throws Exception
      * @throws NotFoundException
      */
-    public function route(Stringable | string $defaultComponent): Response
+    public function route(Stringable | string $defaultComponent, Request $request): Response
     {
-
         $response = false;
-        $route = $this->routes->dispatch($this->request);
+        $this->log->debug('Request '.$request->getMethod().' '.$request->getUri());
+        $route = $this->routes->dispatch($request);
         if ($route) {
             [$class, $method] = explode('.', $route);
             $this->log->debug("Route matched $route");
             $component = new ComponentElement($class);
-            $this->bind($component->getComponent());
-            $response = $component->call($method, $this->getArgs());
+            $this->bind($component->getComponent(), $request);
+            $response = $component->call($method, $this->getArgs($request));
         }
         if (!$response) {
+            $this->log->debug('No response, rendering main component');
             $response = new Response(
                 (new ComponentElement($defaultComponent))->render(),
                 Response::HTTP_OK
@@ -49,14 +47,14 @@ class Router
         return $response;
     }
 
-    public function getArgs(): array
+    public function getArgs(Request $request): array
     {
         // TODO Change hardcoded string to constant or config
-        $params = $this->request->query->get('fernet-params', []);
-        $this->request->query->remove('fernet-params');
-        $args = $this->request->query->all();
+        $params = $request->query->get('fernet-params', []);
+        $request->query->remove('fernet-params');
+        $args = $request->query->all();
         foreach ($args as $key => $value) {
-            if (strpos($key, '__fernet') !== false) {
+            if (str_contains($key, '__fernet')) {
                 unset($args[$key]);
             }
         }
@@ -71,15 +69,15 @@ class Router
             }
         }
         $this->log->debug('Arguments passed to component event', [$args]);
-        $args[] = $this->request;
+        $args[] = $request;
 
         return array_values($args);
     }
 
-    public function bind(Stringable $component): void
+    public function bind(Stringable $component, Request $request): void
     {
         // TODO Change hardcoded string to constant or config
-        foreach ($this->request->request->get('fernet-bind', []) as $key => $value) {
+        foreach ($request->request->get('fernet-bind', []) as $key => $value) {
             $this->log->debug("Binding \"$key\" to", [$value]);
             $var = &$component;
             foreach (explode('.', $key) as $attr) {
