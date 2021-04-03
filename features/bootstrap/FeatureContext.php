@@ -76,11 +76,18 @@ class FeatureContext implements Context
     }
 
     /**
-     * @When /^the main component is "([^"]*)" and we navigate to "([^"]*)"$/
+     * @When /^the main component is "([^"]*)"$/
      */
-    public function theMainComponentIsAndWeNavigateTo($component, $url): void
+    public function theMainComponentIs(string $component): void
     {
         $this->browser->setMainComponent($component);
+    }
+
+    /**
+     * @When /^go to "([^"]*)"$/
+     */
+    public function goTo(string $url): void
+    {
         $this->crawler = $this->browser->request('GET', $url);
     }
 

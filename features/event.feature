@@ -22,7 +22,7 @@ Feature: Event
       }
     }
     """
-    Given the component defined in the class
+    And the component defined in the class
     """
     class SimpleEventMain
     {
@@ -32,6 +32,7 @@ Feature: Event
       }
     }
     """
-    When the main component is "SimpleEventMain" and we navigate to "/"
+    When the main component is "SimpleEventMain"
+    And go to "/"
     And the link "Toggle" is clicked
     Then I can see the text "Yes" on "p"
