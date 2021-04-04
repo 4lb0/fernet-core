@@ -18,21 +18,11 @@ Feature: Event
       public function __toString(): string
       {
         $text = $this->clicked ? 'Yes' : 'No';
-        return "<p>$text</p><a @onClick='handleClick'>Toggle</a>";
+        return "<html><body><p>$text</p><a @onClick='handleClick'>Toggle</a></body></html>";
       }
     }
     """
-    And the component defined in the class
-    """
-    class SimpleEventMain
-    {
-      public function __toString(): string
-      {
-        return "<html><body><SimpleEvent /></body></html>";
-      }
-    }
-    """
-    When the main component is "SimpleEventMain"
+    When the main component is "SimpleEvent"
     And go to "/"
     And the link "Toggle" is clicked
     Then I can see the text "Yes" on "p"
