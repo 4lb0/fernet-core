@@ -8,8 +8,8 @@ use Fernet\Params;
 
 class ReplaceComponents
 {
-    private const REGEX_TAG_WITH_CHILD = '/<([A-Z][\w0-9_\-]+)([^>]*)>(.+?)<\/\1>/s';
-    private const REGEX_TAG = '/<([A-Z][\w0-9_\-]+)([^>]*)\/>/s';
+    private const REGEX_TAG_WITH_CHILD = '/<([A-Z][\w0-9_\-\.]+)([^>]*)>(.+?)<\/\1>/s';
+    private const REGEX_TAG = '/<([A-Z][\w0-9_\-\.]+)([^>]*)\/>/s';
     private const REGEX_ATTRIBUTE = '/(\w+)=(["\'])(.+)\2/s';
     private const REGEX_ATTRIBUTE_WITH_OBJECT = '/(\w+)={(.+)}/s';
 
@@ -30,6 +30,7 @@ class ReplaceComponents
                     $raws[] = $matches[0][$i];
                     $params = $this->parseAttributes($matches[2][$i]);
                     $childContent = $matches[3][$i] ?? '';
+                    $tag = str_replace('.', '\\', $tag);
                     $contents[] = (new ComponentElement($tag, $params, $childContent))->render();
                 }
             }

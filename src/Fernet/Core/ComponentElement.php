@@ -14,6 +14,7 @@ use Stringable;
 class ComponentElement
 {
     private Stringable $component;
+    private string $childContent;
 
     /**
      * ComponentElement constructor.
@@ -21,18 +22,16 @@ class ComponentElement
      * @param mixed  $classOrObject Object or the name of the component
      * @param array  $params        The params the object need to be created
      * @param string $childContent  The HTML child content if applied
-     *
-     * @throws NotFoundException
      */
     public function __construct(Stringable | string $classOrObject, array $params = [], string $childContent = '')
     {
         $component = is_string($classOrObject) ?
-            $this->getObject($classOrObject) :
+            $this->getFromContainer(ComponentFactory::class)->create($classOrObject) :
             $classOrObject;
         foreach ($params as $key => $value) {
             $component->$key = $value;
         }
-        $component->childContent = $childContent;
+        $this->childContent = $childContent;
         $this->component = $component;
     }
 
@@ -46,27 +45,6 @@ class ComponentElement
         return Framework::getInstance()->getContainer()->get($class);
     }
 
-    /**
-     * @param string $class
-     * @return Stringable
-     *
-     * @throws NotFoundException
-     */
-    private function getObject(string $class): Stringable
-    {
-        // TODO Add filesystem or memory cache to the string to object
-        if (class_exists($class)) {
-            return $this->getFromContainer($class);
-        }
-        $namespaces = Framework::config('componentNamespaces');
-        foreach ($namespaces as $namespace) {
-            $classWithNamespace = $namespace.'\\'.$class;
-            if (class_exists($classWithNamespace)) {
-                return $this->getFromContainer($classWithNamespace);
-            }
-        }
-        throw new NotFoundException(sprintf('Component "%s" not defined in ["%s"]', $class, implode('", "', $namespaces)));
-    }
 
     /**
      * @param $method
@@ -77,6 +55,7 @@ class ComponentElement
      */
     public function call($method, $args): mixed
     {
+        $this->getFromContainer(ComponentFactory::class)->add($this->component);
         if (!method_exists($this->component, $method)) {
             throw new NotFoundException(sprintf('Method "%s" not found in component "%s"', $method, get_class($this->component)));
         }
@@ -84,13 +63,34 @@ class ComponentElement
         return call_user_func_array([$this->component, $method], $args);
     }
 
+    private function _render(string $content): string
+    {
+        if (!trim($content)) {
+            return $content;
+        }
+        $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
+
+        return $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
+    }
+
     public function render(): string
     {
         $class = get_class($this->component);
-        $this->getFromContainer(Logger::class)->debug("Rendering \"$class\"");
-        $content = (string) $this->component;
-        $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
-        $content = $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
+        $log = $this->getFromContainer(Logger::class);
+        $events = $this->getFromContainer(Events::class);
+        $log->debug("Start rendering \"$class\"");
+        $lastEvent = $events->getLastEvent();
+        // FIXME Process customs tags inside childContent, the bug is in the tag regexp
+        $this->component->childContent = $this->_render($this->childContent);
+        $content = $this->_render($this->component->__toString());
+        $log->debug("Finish rendering \"$class\"");
+        if (isset($this->component->dirtyState) && $this->component->dirtyState) {
+            $log->debug("Start rendering again because state is dirty \"$class\"");
+            $events->restore($lastEvent);
+            // Restore the events because we're going to recreate them
+            $content = $this->_render($this->component->__toString());
+            $log->debug("Finish rendering dirty \"$class\"");
+        }
 
         return $content;
     }

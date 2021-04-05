@@ -3,9 +3,13 @@ declare(strict_types=1);
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
+use Fernet\Browser;
 use Fernet\Framework;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Response;
 use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertStringContainsString;
+use Monolog\Logger;
 
 /**
  * Defines application features from the specific context.
@@ -13,6 +17,8 @@ use function PHPUnit\Framework\assertEquals;
 class FeatureContext implements Context
 {
     private Response $response;
+    private Browser $browser;
+    private ?Crawler $crawler;
 
     /**
      * Initializes context.
@@ -23,9 +29,12 @@ class FeatureContext implements Context
      */
     public function __construct()
     {
+        file_put_contents('/tmp/fernet.log', ''); // clean log
         Framework::setUp([
-            'logPath' => '//dev/null',
+            'logPath' => '/tmp/fernet.log',
+            'logLevel' => Logger::DEBUG,
             'enableJs' => false,
+            'devMode' => false,
         ]);
     }
 
@@ -63,19 +72,31 @@ class FeatureContext implements Context
     }
 
     /**
+     * @When /^the main component is "([^"]*)" and we navigate to "([^"]*)"$/
+     */
+    public function theMainComponentIsAndWeNavigateTo($component, $url)
+    {
+        $this->browser = new Browser();
+        $this->browser->setMainComponent($component);
+        $this->crawler = $this->browser->request('GET', $url);
+        file_put_contents('/tmp/asd.html', $this->crawler->html());
+    }
+
+    /**
      * @Given /^the link "([^"]*)" is clicked$/
      */
     public function theLinkIsClicked(string $link)
     {
-        throw new \Behat\Behat\Tester\Exception\PendingException();
+        $this->crawler = $this->browser->clickLink($link);
     }
 
     /**
-     * @Then /^the I can see the text "([^"]*)"$/
+     * @Then /^I can see the text "([^"]*)" on "([^"]*)"$/
      */
-    public function theICanSeeTheText(string $text)
+    public function theICanSeeTheText(string $text, string $selector)
     {
-        throw new \Behat\Behat\Tester\Exception\PendingException();
+        $html = $this->crawler->filter($selector)->html();
+        assertStringContainsString($text, $html);
     }
 
 }

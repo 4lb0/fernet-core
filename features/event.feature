@@ -9,6 +9,7 @@ Feature: Event
     class SimpleEvent
     {
       private bool $clicked = false;
+
       public function handleClick()
       {
         $this->clicked = true;
@@ -16,11 +17,21 @@ Feature: Event
 
       public function __toString(): string
       {
-        $text = $this->clicked ? 'On' : 'Off';
-        return "<html><body><p>$text</p><a onClick='handleClick'>Toggle</a></body></html>";
+        $text = $this->clicked ? 'Yes' : 'No';
+        return "<p>$text</p><a @onClick='handleClick'>Toggle</a>";
       }
     }
     """
-    When the framework is run with component "SimpleEvent"
+    Given the component defined in the class
+    """
+    class SimpleEventMain
+    {
+      public function __toString(): string
+      {
+        return "<html><body><SimpleEvent /></body></html>";
+      }
+    }
+    """
+    When the main component is "SimpleEventMain" and we navigate to "/"
     And the link "Toggle" is clicked
-    Then the I can see the text "On"
+    Then I can see the text "Yes" on "p"

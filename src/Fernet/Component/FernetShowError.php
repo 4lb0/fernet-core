@@ -73,6 +73,7 @@ class FernetShowError
             <?php } ?>
             </ul>
             <?php } ?>
+            <LiveReload />
         </body>
         </html>
 <?php

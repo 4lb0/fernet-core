@@ -15,14 +15,14 @@ class RoutesTest extends TestCase
     public function testNoRoutesFile(): void
     {
         $framework = Framework::setUp(['routingFile' => 'file/not/exists.json']);
-        $routes = new Routes($framework);
+        $routes = new Routes($framework, $this->createNullLogger());
         self::assertEquals([], $routes->getRoutes());
     }
 
     public function testRoutesFile(): void
     {
         $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
-        $routes = (new Routes($framework))->getRoutes();
+        $routes = (new Routes($framework, $this->createNullLogger()))->getRoutes();
         self::assertArrayHasKey('/about', $routes);
         self::assertContains('Menu.handleAbout', $routes);
         self::assertArrayHasKey('/some/foo/bar/page', $routes);
@@ -33,13 +33,13 @@ class RoutesTest extends TestCase
     {
         $this->expectException(Exception::class);
         $framework = Framework::setUp(['routingFile' => 'tests/fixtures/non-json-file.json']);
-        (new Routes($framework))->getRoutes();
+        (new Routes($framework, $this->createNullLogger()))->getRoutes();
     }
 
     public function testLink(): void
     {
         $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
-        $routes = new Routes($framework);
+        $routes = new Routes($framework, $this->createNullLogger());
         self::assertEquals('/about', $routes->get('Menu', 'handleAbout'));
         self::assertEquals('/some/foo/bar/page', $routes->get('FooBar', 'renderPage'));
         self::assertEquals(null, $routes->get('NotMappedComponent', 'handleClick'));
@@ -49,7 +49,7 @@ class RoutesTest extends TestCase
     public function testDispatch(): void
     {
         $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
-        $routes = new Routes($framework);
+        $routes = new Routes($framework, $this->createNullLogger());
         $request = $this->createRequest('/about');
         self::assertEquals('Menu.handleAbout', $routes->dispatch($request));
 
@@ -63,7 +63,7 @@ class RoutesTest extends TestCase
     public function testDefaultHandlersRoutes(): void
     {
         $framework = Framework::setUp();
-        $routes = new Routes($framework);
+        $routes = new Routes($framework, $this->createNullLogger());
         $request = $this->createRequest('/hello-component/some-handler');
         self::assertEquals('HelloComponent.someHandler', $routes->dispatch($request));
     }

@@ -180,7 +180,7 @@ final class Framework
             $this->container->add(Request::class, $request);
             /** @var Router $router */
             $router = $this->container->get(Router::class);
-            $response = $router->route($component);
+            $response = $router->route($component, $request);
             $this->dispatch('onResponse', [$response]);
         } catch (NotFoundException $notFoundException) {
             $this->log->notice('Route not found');
