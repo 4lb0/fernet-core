@@ -23,6 +23,11 @@ class ComponentFactory
         $this->components[$component::class] = $component;
     }
 
+    public function exists(Stringable $component): bool
+    {
+        return isset($this->components[$components::class]);
+    }
+
     private function get(string $class): Stringable
     {
         return $this->components[$class] ?? $this->container->get($class);

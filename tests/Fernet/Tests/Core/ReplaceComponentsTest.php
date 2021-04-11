@@ -32,6 +32,19 @@ class ReplaceComponentsTest extends TestCase
             $replace->replace('<div><TestReplaceComponent name="John" /></div>')
         );
     }
+
+    public function testEmptyAttribute(): void
+    {
+        $replace = new ReplaceComponents();
+        self::assertEquals(
+            '<p>This is not valid</p>',
+            $replace->replace('<p><TestEmptyAttribute /></p>')
+        );
+        self::assertEquals(
+            '<p>Valid is true</p>',
+            $replace->replace('<p><TestEmptyAttribute valid /></p>')
+        );
+    }
 }
 
 class TestReplaceComponent
@@ -41,5 +54,15 @@ class TestReplaceComponent
     public function __toString(): string
     {
         return "<p>Hello $this->name</p>";
+    }
+}
+
+class TestEmptyAttribute
+{
+    public bool $valid = false;
+
+    public function __toString(): string
+    {
+        return $this->valid ? 'Valid is true' : 'This is not valid';
     }
 }

@@ -39,6 +39,7 @@ final class Framework
         'rootPath' => '.',
         'routingFile' => 'routing.json',
         'pluginFile' => 'plugins.json',
+        'enableJs' => false,
     ];
 
     private static self $instance;
