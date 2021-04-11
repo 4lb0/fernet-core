@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class JsBridge
 {
-    private Stringable $calledComponent;
+    private ?Stringable $calledComponent = null;
     private string $content;
 
     public function __construct(private Logger $log)
