@@ -10,7 +10,7 @@ class ReplaceComponents
 {
     private const REGEX_TAG_WITH_CHILD = '/<([A-Z][\w0-9_\-\.]+)([^>]*)>(.+?)<\/\1>/s';
     private const REGEX_TAG = '/<([A-Z][\w0-9_\-\.]+)([^>]*)\/>/s';
-    private const REGEX_ATTRIBUTE = '/(\w+)=(["\'])(.+)\2/s';
+    private const REGEX_ATTRIBUTE = '/(\w+)(?:=(["\'])(.+)\2)?/s';
     private const REGEX_ATTRIBUTE_WITH_OBJECT = '/(\w+)={(.+)}/s';
 
     /**
@@ -44,7 +44,7 @@ class ReplaceComponents
         $attributes = [];
         if (preg_match_all(static::REGEX_ATTRIBUTE, $raw, $matches)) {
             foreach ($matches[1] as $i => $key) {
-                $attributes[$key] = $matches[3][$i];
+                $attributes[$key] = $matches[3][$i] ?: true;
             }
         }
         if (preg_match_all(static::REGEX_ATTRIBUTE_WITH_OBJECT, $raw, $matches)) {

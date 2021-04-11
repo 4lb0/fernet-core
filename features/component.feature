@@ -91,6 +91,33 @@ Feature: Components
     When the framework is run with component "HelloChildrenApp"
     Then the output is '<p>Hello Carmencita</p>'
 
+  Scenario: You can define a component with an empty param.
+    Given the component defined in the class
+    """
+    class SomeButton
+    {
+      public bool $active = false;
+      public string $to;
+
+      public function __toString(): string
+      {
+        $class = $this->active ? ' class="active"' : '';
+        return "<a href=\"{$this->to}\"{$class}>{$this->childContent}</a>";
+      }
+    }
+    """
+    And the component defined in the class
+    """
+    class SomeButtonApp
+    {
+      public function __toString(): string
+      {
+        return '<SomeButton to="/hello" active>Hello</SomeButton>';
+      }
+    }
+    """
+    When the framework is run with component "SomeButtonApp"
+    Then the output is '<a href="/hello" class="active">Hello</a>'
 
   Scenario: To create a component with a non string as a parameter we need
             to use the Param::component static method helper.
