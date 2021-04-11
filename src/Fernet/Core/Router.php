@@ -39,7 +39,7 @@ class Router
         if (!$response) {
             $this->log->debug('No response, rendering main component');
             $response = new Response(
-                (new ComponentElement($defaultComponent))->render(),
+                (new ComponentElement($defaultComponent))->setMain()->render(),
                 Response::HTTP_OK
             );
         }

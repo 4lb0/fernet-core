@@ -13,6 +13,7 @@ use Stringable;
 
 class ComponentElement
 {
+    public const WRAPPER_CLASS = '__fw';
     private Stringable $component;
     private string $childContent;
 
@@ -69,8 +70,14 @@ class ComponentElement
             return $content;
         }
         $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
+        $content = $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
+        return $content;
+    }
 
-        return $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
+    public function setMain()
+    {
+        $this->component->preventWrapper = true;
+        return $this;
     }
 
     public function render(): string
@@ -90,6 +97,12 @@ class ComponentElement
             // Restore the events because we're going to recreate them
             $content = $this->_render($this->component->__toString());
             $log->debug("Finish rendering dirty \"$class\"");
+        }
+
+        $this->getFromContainer(JsBridge::class)->setContent($this->component, $content);
+        if (Framework::getInstance()->getConfig('enableJs') && (!isset($this->component->preventWrapper) || !$this->component->preventWrapper)) {
+            $wrapperClass = static::WRAPPER_CLASS;
+            return "<span class=\"$wrapperClass\">$content</span>";
         }
 
         return $content;

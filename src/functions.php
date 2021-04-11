@@ -31,7 +31,7 @@ function href($component, $method = 'route', $css = '', ...$params): string
     $link = $routes->get($component, $method, $params);
     $isActive = $request->server->get('REQUEST_URI') === $link;
     if ($isActive || $css) {
-        $classes = [$css];
+        $classes = [$css, '__fm'];
         if ($isActive) {
             $classes[] = 'active';
         }
