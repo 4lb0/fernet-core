@@ -16,7 +16,9 @@ trait StatefulComponent
         if ($this->persist && !session_id()) {
             session_start();
         }
-        $this->state = $this->persist && isset($_SESSION[static::class]) ? $_SESSION[static::class] : (object) $params;
+        $this->state = $this->persist && isset($_SESSION[static::class]) ?
+            (object) array_merge($params, (array) $_SESSION[static::class]) :
+            (object) $params;
         $this->dirtyState = false;
         if ($this->persist) {
             $_SESSION[static::class] = $this->state;
