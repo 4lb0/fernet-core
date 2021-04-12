@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Fernet\Component;
@@ -16,9 +17,7 @@ class FernetJs
 
     public function __toString()
     {
-        return <<<HTML:
-            <style>span.__fw{ display: inline-block }</style>"
-            <script src="js/fernet.js"></script>
-HTML;
+        return '<style>.__fw{ display:inline-block }</style>'
+              .'<script src="js/fernet.js" defer async></script>';
     }
 }
