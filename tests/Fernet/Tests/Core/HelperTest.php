@@ -42,4 +42,16 @@ class HelperTest extends TestCase
             Helper::hyphen('AnotherGoodExample')
         );
     }
+
+    public function testNamespaces(): void
+    {
+        self::assertEquals(
+            'some.namespace.here',
+            Helper::hyphen('Some\\Namespace\\Here')
+        );
+        self::assertEquals(
+            'Some\\Namespace\\Here',
+            Helper::pascalCase('some.namespace.here')
+        );
+    }
 }

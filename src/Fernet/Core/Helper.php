@@ -13,15 +13,19 @@ class Helper
 
     public static function pascalCase(string $string): string
     {
-        $string = str_replace(['_', '-'], ' ', strtolower($string));
+        $string = str_replace('.', ' \\ ', $string);
+        $string = str_replace(['-', '_'], ' ', strtolower($string));
+        $string = str_replace(' ', '', ucwords($string));
 
-        return str_replace(' ', '', ucwords($string));
+        return $string;
     }
 
     public static function hyphen(string $string): string
     {
-        $string = preg_replace('/([A-Z])/', '-\1', $string);
+        $string = str_replace('\\', '.', $string);
+        $string = preg_replace('/([A-Z.])/', '-\1', $string);
         $string = trim($string, '-');
+        $string = str_replace('-.-', '.', $string);
 
         return strtolower($string);
     }
