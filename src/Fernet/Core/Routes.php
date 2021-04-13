@@ -16,7 +16,7 @@ class Routes
 {
     private const DEFAULT_ROUTE = '/{component}/{method}';
     private const DEFAULT_ROUTE_NAME = '__default_fernet_route';
-    private ?Dispatcher $dispatcher = null;
+    private Dispatcher $dispatcher;
     private array $routes = [];
     private string $configFile;
     private Logger $log;
@@ -40,7 +40,7 @@ class Routes
      */
     public function getDispatcher(): Dispatcher
     {
-        if (!$this->dispatcher) {
+        if (empty($this->dispatcher)) {
             $this->setDispatcher($this->defaultDispatcher());
         }
 

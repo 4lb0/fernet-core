@@ -54,7 +54,7 @@ class ComponentElement
      * @return mixed
      * @throws NotFoundException
      */
-    public function call($method, $args): mixed
+    public function call(string $method, array $args): mixed
     {
         $this->getFromContainer(ComponentFactory::class)->add($this->component);
         if (!method_exists($this->component, $method)) {
@@ -74,7 +74,7 @@ class ComponentElement
         return $content;
     }
 
-    public function setMain()
+    public function setMain(): static
     {
         $this->component->preventWrapper = true;
         return $this;

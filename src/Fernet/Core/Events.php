@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fernet\Core;
 
-use ReflectionFunction;
 use Symfony\Component\HttpFoundation\Request;
 
 class Events
@@ -16,10 +15,12 @@ class Events
     public function __construct(
         private Request $request,
         private JsBridge $jsBridge
-    )
-    {
+    ) {
     }
 
+    /**
+     * @param mixed ...$params
+     */
     public function hash(...$params): string
     {
         return substr(md5(serialize($params)), -7);
@@ -40,7 +41,7 @@ class Events
         $hash = $this->hash(++$this->events, $unique);
         if ($this->request->query->get(static::QUERY_PARAM) === $hash) {
             $callback();
-            if ($this->request->getMethod() == 'PUT' && $this->request->getContent() == "fernet_replace") {
+            if ('PUT' === $this->request->getMethod() && 'fernet_replace' === $this->request->getContent()) {
                 $this->jsBridge->called($callback);
             }
             $this->request->query->remove(static::QUERY_PARAM);
