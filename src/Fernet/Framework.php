@@ -140,12 +140,7 @@ final class Framework
         return $this;
     }
 
-    /**
-     * @param mixed $value
-     *
-     * @return $this
-     */
-    public function addConfig(string $config, $value): self
+    public function addConfig(string $config, mixed $value): Framework
     {
         $this->configs[$config][] = $value;
 

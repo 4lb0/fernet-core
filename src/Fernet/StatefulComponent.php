@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Fernet;
 
+use stdClass;
+
 trait StatefulComponent
 {
     public bool $dirtyState = false;
-    protected $state;
+    protected stdClass $state;
     private bool $persist = false;
 
     public function initState(bool $_persist = true, ...$params): self
@@ -38,7 +40,7 @@ trait StatefulComponent
         return $this;
     }
 
-    public function getState()
+    public function getState(): stdClass
     {
         return $this->state;
     }

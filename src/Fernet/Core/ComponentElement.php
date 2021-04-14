@@ -46,12 +46,10 @@ class ComponentElement
         return Framework::getInstance()->getContainer()->get($class);
     }
 
-
     /**
      * @param $method
      * @param $args
      *
-     * @return mixed
      * @throws NotFoundException
      */
     public function call(string $method, array $args): mixed
@@ -70,13 +68,13 @@ class ComponentElement
             return $content;
         }
         $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
-        $content = $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
-        return $content;
+        return $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
     }
 
     public function setMain(): static
     {
         $this->component->preventWrapper = true;
+
         return $this;
     }
 
@@ -100,8 +98,9 @@ class ComponentElement
         }
 
         $this->getFromContainer(JsBridge::class)->setContent($this->component, $content);
-        if (Framework::getInstance()->getConfig('enableJs') && (!isset($this->component->preventWrapper) || !$this->component->preventWrapper)) {
+        if ((!isset($this->component->preventWrapper) || !$this->component->preventWrapper) && Framework::getInstance()->getConfig('enableJs')) {
             $wrapperClass = static::WRAPPER_CLASS;
+
             return "<span class=\"$wrapperClass\">$content</span>";
         }
 

@@ -32,6 +32,9 @@ class FrameworkTest extends TestCase
         self::assertEquals('SomeErrorComponent', $framework->getConfig('error404'));
     }
 
+    /** @noinspection MockingMethodsCorrectnessInspection
+     * @noinspection PhpParamsInspection
+     */
     public function testObserver(): void
     {
         $framework = Framework::getInstance();

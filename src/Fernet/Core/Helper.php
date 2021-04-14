@@ -15,9 +15,7 @@ class Helper
     {
         $string = str_replace('.', ' \\ ', $string);
         $string = str_replace(['-', '_'], ' ', strtolower($string));
-        $string = str_replace(' ', '', ucwords($string));
-
-        return $string;
+        return str_replace(' ', '', ucwords($string));
     }
 
     public static function hyphen(string $string): string

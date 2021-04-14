@@ -11,6 +11,6 @@ class ComponentElementTest extends TestCase
     public function testGetComponent(): void
     {
         $component = $this->createComponent();
-        $this->assertSame($component, (new ComponentElement($component))->getComponent());
+        self::assertSame($component, (new ComponentElement($component))->getComponent());
     }
 }

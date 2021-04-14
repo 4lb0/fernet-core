@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fernet\Tests\Core;
 
 use Fernet\Core\Exception;
-use Fernet\Core\PluginBootstrap;
 use Fernet\Core\PluginLoader;
 use Fernet\Framework;
 use Fernet\Tests\TestCase;
@@ -21,7 +20,7 @@ class PluginLoaderTest extends TestCase
 
     public function testLoadPlugins(): void
     {
-        $rootPath = dirname(dirname(dirname(__DIR__))).'/fixtures/';
+        $rootPath = dirname(__DIR__, 3).'/fixtures/';
         $framework = Framework::setUp([
             'pluginFile' => 'plugins.json',
             'rootPath' => $rootPath,
@@ -37,8 +36,4 @@ class PluginLoaderTest extends TestCase
         $framework->setConfig('pluginFile', 'tests/fixtures/non-json-file.json');
         (new PluginLoader($framework, $this->createNullLogger()))->warmUpPlugins();
     }
-}
-
-class MyPluginTest extends PluginBootstrap
-{
 }

@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 class JsBridge
 {
     private ?Stringable $calledComponent = null;
-    private string $content;
 
     public function __construct(private Logger $log)
     {
@@ -33,7 +32,7 @@ class JsBridge
     {
         if ($this->calledComponent === $component) {
             // FIXME: Refactor this is imposible to test, we should return a response somewhere
-            $this->log->debug("Callback content finish rendered");
+            $this->log->debug('Callback content finish rendered');
             $response = new Response($content);
             $response->send();
             exit;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fernet\Component;
 
+use Fernet\Core\Exception as CoreException;
 use Fernet\Framework;
 use Throwable;
 
@@ -29,6 +30,9 @@ class FernetShowError
         return "File <strong><a href=\"$url\">$path</a></strong> on line: $line";
     }
 
+    /**
+     * @throws Throwable
+     */
     public function __toString(): string
     {
         try {
@@ -48,7 +52,7 @@ class FernetShowError
             </h1>
             <h2><?php echo $this->error->getMessage(); ?></h2>
 
-            <?php if ($this->error instanceof Exception && $this->error->getLink()) { ?>
+            <?php if ($this->error instanceof CoreException && $this->error->getLink()) { ?>
             <p>For more help go to <a href="<?php echo $this->error->getLink(); ?>"><?php echo $this->error->getLink(); ?></a></p>
             <?php } ?> 
             <p>

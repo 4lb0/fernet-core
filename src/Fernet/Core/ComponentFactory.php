@@ -25,7 +25,7 @@ class ComponentFactory
 
     public function exists(Stringable $component): bool
     {
-        return isset($this->components[$components::class]);
+        return isset($this->components[$component::class]);
     }
 
     private function get(string $class): Stringable
