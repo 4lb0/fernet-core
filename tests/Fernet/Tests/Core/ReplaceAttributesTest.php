@@ -21,12 +21,12 @@ class ReplaceAttributesTest extends TestCase
     public function testReplaceLink(): void
     {
         $replace = Framework::getInstance()->getContainer()->get(ReplaceAttributes::class);
-        $html = '<a @onClick="handler">Hello</a>';
+        $html = '<a @href="handler">Hello</a>';
         $component = $this->createComponent();
         self::assertStringContainsString('href', $replace->replace($html, $component));
 
         $vars = serialize(['1', 2, false]);
-        $html = "<a @onClick='otherHandler($vars)'>Hello</a>";
+        $html = "<a @href='otherHandler($vars)'>Hello</a>";
         $component = $this->createComponent();
         self::assertStringContainsString('href', $replace->replace($html, $component));
     }

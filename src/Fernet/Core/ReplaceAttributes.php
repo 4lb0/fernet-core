@@ -10,8 +10,8 @@ use function get_class;
 
 class ReplaceAttributes
 {
-    private const REGEX_FORM_SUBMIT = '/<form.*?(@(onSubmit)=(["\'])(.*?)\3)/';
-    private const REGEX_A_ONCLICK = '/<a.*?(@(onClick)=(["\'])(.*?)\3)/';
+    private const REGEX_FORM_SUBMIT = '/<form.*?(@(action)=(["\'])(.*?)\3)/';
+    private const REGEX_A_ONCLICK = '/<a.*?(@(href)=(["\'])(.*?)\3)/';
     private const REGEX_BIND_INPUT = '/<input.*?(@(bind)=(["\'])(.*?)\3)/';
     private const REGEX_BIND_TEXTAREA = '/<textarea(.*?)(@bind=(["\'])((?:\\\\3|(?:(?!\3)).)*)(\3))([^>]*)>/';
     private Routes $routes;

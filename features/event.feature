@@ -8,21 +8,21 @@ Feature: Event
     """
     class SimpleEvent
     {
-      private bool $clicked = false;
+      private bool $routed = false;
 
       public function handleClick()
       {
-        $this->clicked = true;
+        $this->routed = true;
       }
 
       public function __toString(): string
       {
-        $text = $this->clicked ? 'Yes' : 'No';
-        return "<html><body><p>$text</p><a @onClick='handleClick'>Toggle</a></body></html>";
+        $text = $this->routed ? 'Yes' : 'No';
+        return "<html><body><p>$text</p><a @href='handleClick'>Go</a></body></html>";
       }
     }
     """
     When the main component is "SimpleEvent"
     And go to "/"
-    And the link "Toggle" is clicked
+    And the link "Go" is clicked
     Then I can see the text "Yes" on "p"
