@@ -6,16 +6,12 @@ use Monolog\Logger;
 use Stringable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Fernet\Component\Router as ComponentRouter;
 
 class Router
 {
-    private Logger $log;
-    private Routes $routes;
-
-    public function __construct(Logger $log, Routes $routes)
+    public function __construct(private Logger $log, private Routes $routes, private ?ComponentRouter $componentRouter = null)
     {
-        $this->log = $log;
-        $this->routes = $routes;
     }
 
     /**
@@ -32,6 +28,9 @@ class Router
             $this->log->debug("Route matched $route");
             $component = new ComponentElement($class);
             $this->bind($component->getComponent(), $request);
+            if (!empty($this->componentRouter)) {
+                $this->componentRouter->setRoute($component->getComponent());
+            }
             $response = $component->call($method, $this->getArgs($request));
         }
         if (!$response) {
@@ -48,9 +47,9 @@ class Router
     public function getArgs(Request $request): array
     {
         // TODO Change hardcoded string to constant or config
-        $params = $request->query->get('fernet-params', []);
-        $request->query->remove('fernet-params');
         $args = $request->query->all();
+        $params = $args['fernet-params'] ?? [];
+        unset($args['fernet-params']);
         foreach ($args as $key => $value) {
             if (str_contains($key, '__fernet')) {
                 unset($args[$key]);
@@ -75,7 +74,7 @@ class Router
     public function bind(Stringable $component, Request $request): void
     {
         // TODO Change hardcoded string to constant or config
-        foreach ($request->request->get('fernet-bind', []) as $key => $value) {
+        foreach ($request->request->all()['fernet-bind'] ?? [] as $key => $value) {
             $this->log->debug("Binding \"$key\" to", [$value]);
             $var = &$component;
             foreach (explode('.', $key) as $attr) {
