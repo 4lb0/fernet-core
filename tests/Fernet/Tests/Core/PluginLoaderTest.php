@@ -26,7 +26,8 @@ class PluginLoaderTest extends TestCase
             'rootPath' => $rootPath,
         ]);
         $pluginLoader = new PluginLoader($framework, $this->createNullLogger());
-        self::assertEquals(null, $pluginLoader->loadPlugins());
+        $pluginLoader->loadPlugins();
+        self::assertTrue(MyPluginTest::$pluginLoaded);
     }
 
     public function testPluginFileJsonError(): void
