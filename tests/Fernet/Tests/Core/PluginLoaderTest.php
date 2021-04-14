@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection PhpUnhandledExceptionInspection */
 
 declare(strict_types=1);
 
@@ -34,7 +35,7 @@ class PluginLoaderTest extends TestCase
     {
         $this->expectException(Exception::class);
         $framework = Framework::setUp();
-        $framework->setConfig('pluginFile', 'tests/fixtures/non-json-file.json');
+        $framework->setConfig('pluginFile', 'tests/fixtures/non-json-file.txt');
         (new PluginLoader($framework, $this->createNullLogger()))->warmUpPlugins();
     }
 }

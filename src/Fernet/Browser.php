@@ -20,7 +20,6 @@ class Browser extends AbstractBrowser
     /**
      * @param \Symfony\Component\BrowserKit\Request $request
      * @return Response
-     * @noinspection PhpUnused
      */
     protected function doRequest($request): Response
     {

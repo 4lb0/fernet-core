@@ -47,9 +47,6 @@ class ComponentElement
     }
 
     /**
-     * @param $method
-     * @param $args
-     *
      * @throws NotFoundException
      */
     public function call(string $method, array $args): mixed

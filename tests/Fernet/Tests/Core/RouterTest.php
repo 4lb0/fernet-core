@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUnhandledExceptionInspection */
 
 declare(strict_types=1);
 
@@ -60,5 +62,4 @@ class RouterTest extends TestCase
         );
         self::assertCount(3, $router->getArgs($request));
     }
-
 }

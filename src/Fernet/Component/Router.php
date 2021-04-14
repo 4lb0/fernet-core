@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fernet\Component;
 
 use Fernet\Core\ComponentElement;
-use Fernet\Core\NotFoundException;
 use Fernet\Framework;
 use Stringable;
 
@@ -27,9 +26,6 @@ class Router
         $this->route = $component;
     }
 
-    /**
-     * @throws NotFoundException
-     */
     public function __toString(): string
     {
         $content = (new ComponentElement($this->route ?? $this->default))->render();
@@ -37,8 +33,10 @@ class Router
         if ($this->framework->getConfig('enableJs')) {
             $wrapperClass = ComponentElement::WRAPPER_CLASS;
             $routerId = static::ROUTER_ID;
+
             return "<span id=\"$routerId\" class=\"$wrapperClass\">$content</span>";
         }
+
         return $content;
     }
 }

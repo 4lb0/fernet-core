@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 declare(strict_types=1);
 
 namespace Fernet\Tests\Core;
@@ -32,7 +34,7 @@ class RoutesTest extends TestCase
     public function testRoutesFileJsonError(): void
     {
         $this->expectException(Exception::class);
-        $framework = Framework::setUp(['routingFile' => 'tests/fixtures/non-json-file.json']);
+        $framework = Framework::setUp(['routingFile' => 'tests/fixtures/non-json-file.txt']);
         (new Routes($framework, $this->createNullLogger()))->getRoutes();
     }
 

@@ -19,8 +19,6 @@ class Router
     }
 
     /**
-     * @param $defaultComponent
-     *
      * @throws Exception
      * @throws NotFoundException
      */
