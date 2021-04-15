@@ -18,6 +18,6 @@ class FernetJs
     public function __toString()
     {
         return '<style>.__fw{ display:inline-block }</style>'
-              .'<script src="js/fernet.js" defer async></script>';
+              .'<script src="/js/fernet.js" defer async></script>';
     }
 }
