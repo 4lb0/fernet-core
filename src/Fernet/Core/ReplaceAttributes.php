@@ -50,16 +50,6 @@ class ReplaceAttributes
                     } catch (Exception) {
                         $url = false;
                     }
-                    if (!$url) {
-                        $url = Framework::config('urlPrefix').Helper::hyphen($classWithoutNamespace).'/'.Helper::hyphen($definition);
-                        if ($args) {
-                            $param = [];
-                            foreach ($args as $arg) {
-                                $param[] = serialize($arg);
-                            }
-                            $url .= '?'.htmlentities(http_build_query(['fernet-params' => $param]));
-                        }
-                    }
                     $contents[] = sprintf($attr, $url);
                 }
             }

@@ -25,6 +25,9 @@ class Router
         $route = $this->routes->dispatch($request);
         if ($route) {
             [$class, $method] = explode('.', $route);
+            if (!$method) {
+                $method = 'route';
+            }
             $this->log->debug("Route matched $route");
             $component = new ComponentElement($class);
             $this->bind($component->getComponent(), $request);

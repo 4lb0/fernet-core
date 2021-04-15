@@ -44,7 +44,7 @@ class RoutesTest extends TestCase
         $routes = new Routes($framework, $this->createNullLogger());
         self::assertEquals('/about', $routes->get('Menu', 'handleAbout'));
         self::assertEquals('/some/foo/bar/page', $routes->get('FooBar', 'renderPage'));
-        self::assertEquals(null, $routes->get('NotMappedComponent', 'handleClick'));
+        self::assertEquals('/not-mapped-component/handle-click', $routes->get('NotMappedComponent', 'handleClick'));
         self::assertEquals('/name/John+Doe/age/75', $routes->get('UserProfile', 'show', ['name' => 'John Doe', 'age' => 75]));
     }
 

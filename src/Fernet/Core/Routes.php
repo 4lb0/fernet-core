@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Routes
 {
-    private const DEFAULT_ROUTE = '/{component}/{method}';
+    private const DEFAULT_ROUTE = '/{component}[/{method}]';
     private const DEFAULT_ROUTE_NAME = '__default_fernet_route';
     private Dispatcher $dispatcher;
     private array $routes = [];
@@ -79,6 +79,9 @@ class Routes
             $routes = json_decode(file_get_contents($this->configFile), true, 512, JSON_THROW_ON_ERROR);
             foreach ($routes as $route => $handler) {
                 [$component, $method] = explode('.', $handler);
+                if (!$method) {
+                    $method = 'route';
+                }
                 $this->routes[$component][$method] = $route;
             }
 
@@ -93,7 +96,7 @@ class Routes
     /**
      * @throws Exception
      */
-    public function get(string $component, string $method, ?array $args = null): ?string
+    public function get(string $component, string $method, ?array $args = null): string
     {
         if (!$this->routes) {
             $this->defaultDispatcher();
@@ -109,7 +112,19 @@ class Routes
             return $route;
         }
 
-        return null;
+        $url = Framework::config('urlPrefix').Helper::hyphen($component);
+        if ('route' !== $method) {
+            $url .= '/'.Helper::hyphen($method);
+        }
+        if ($args) {
+            $param = [];
+            foreach ($args as $arg) {
+                $param[] = serialize($arg);
+            }
+            $url .= '?'.htmlentities(http_build_query(['fernet-params' => $param]));
+        }
+
+        return $url;
     }
 
     /**
@@ -123,6 +138,9 @@ class Routes
             return null;
         }
         if (self::DEFAULT_ROUTE_NAME === $handler) {
+            if (!$vars['method']) {
+                $vars['method'] = 'route';
+            }
             $handler = Helper::pascalCase($vars['component']).'.'.Helper::camelCase($vars['method']);
         } else {
             $request->query->add($vars);
