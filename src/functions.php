@@ -22,21 +22,3 @@ function linkTo($component, $method = 'route', ...$params)
 
     return $routes->get($component, $method, $params);
 }
-
-function href($component, $method = 'route', $css = '', ...$params): string
-{
-    $container = Framework::getInstance()->getContainer();
-    $routes = $container->get(Routes::class);
-    $request = $container->get(Symfony\Component\HttpFoundation\Request::class);
-    $link = $routes->get($component, $method, $params);
-    $isActive = $request->server->get('REQUEST_URI') === $link;
-    if ($isActive || $css) {
-        $classes = [$css, '__fm'];
-        if ($isActive) {
-            $classes[] = 'active';
-        }
-        $css = ' class="'.implode(' ', $classes).'"';
-    }
-
-    return "href=\"$link\"$css";
-}
