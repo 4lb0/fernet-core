@@ -40,6 +40,38 @@ trait StatefulComponent
         return $this;
     }
 
+    public function addState(string $key, mixed $value): static
+    {
+        if (!isset($this->state->$key)) {
+            $this->state->$key = [];
+        }
+        $this->state->$key[] = $value;
+        $this->dirtyState = true;
+
+        return $this;
+    }
+
+
+    public function removeState(string $key, int | string $positionOrKey): static
+    {
+        if (isset($this->state->$key)) {
+            unset($this->state->$key[$positionOrKey]);
+            $this->dirtyState = true;
+        }
+
+        return $this;
+    }
+
+    public function updateState(string $key, int | string $positionOrKey, mixed $value): static
+    {
+        if (isset($this->state->$key)) {
+            $this->state->$key[$positionOrKey] = $value;
+            $this->dirtyState = true;
+        }
+
+        return $this;
+    }
+
     public function getState(): stdClass
     {
         return $this->state;
