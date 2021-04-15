@@ -57,9 +57,9 @@ class Routes
 
         return simpleDispatcher(function (RouteCollector $routeCollection) use ($routes) {
             foreach ($routes as $route => $handler) {
-                $routeCollection->addRoute(['GET', 'POST'], $route, $handler);
+                $routeCollection->addRoute(['GET', 'POST', 'PUT'], $route, $handler);
             }
-            $routeCollection->addRoute(['GET', 'POST'], self::DEFAULT_ROUTE, self::DEFAULT_ROUTE_NAME);
+            $routeCollection->addRoute(['GET', 'POST', 'PUT'], self::DEFAULT_ROUTE, self::DEFAULT_ROUTE_NAME);
         });
     }
 
@@ -78,7 +78,7 @@ class Routes
         try {
             $routes = json_decode(file_get_contents($this->configFile), true, 512, JSON_THROW_ON_ERROR);
             foreach ($routes as $route => $handler) {
-                [$component, $method] = explode('.', $handler);
+                [$component, $method] = explode('.', $handler.'.');
                 if (!$method) {
                     $method = 'route';
                 }

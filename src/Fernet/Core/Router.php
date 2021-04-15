@@ -2,15 +2,15 @@
 
 namespace Fernet\Core;
 
+use Fernet\Component\Router as ComponentRouter;
 use Monolog\Logger;
 use Stringable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Fernet\Component\Router as ComponentRouter;
 
 class Router
 {
-    public function __construct(private Logger $log, private Routes $routes, private ?ComponentRouter $componentRouter = null)
+    public function __construct(private Logger $log, private Routes $routes, private ?ComponentRouter $componentRouter = null, private ?JsBridge $jsBridge = null)
     {
     }
 
@@ -24,12 +24,16 @@ class Router
         $this->log->debug('Request '.$request->getMethod().' '.$request->getUri());
         $route = $this->routes->dispatch($request);
         if ($route) {
-            [$class, $method] = explode('.', $route);
+            [$class, $method] = explode('.', $route.'.');
             if (!$method) {
                 $method = 'route';
             }
             $this->log->debug("Route matched $route");
             $component = new ComponentElement($class);
+            if ('PUT' === $request->getMethod()) {
+                $this->log->debug("PUT $route");
+                $this->jsBridge->setRoute($component->getComponent());
+            }
             $this->bind($component->getComponent(), $request);
             if (!empty($this->componentRouter)) {
                 $this->componentRouter->setRoute($component->getComponent());

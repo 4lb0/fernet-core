@@ -28,6 +28,11 @@ class JsBridge
         }
     }
 
+    public function setRoute(Stringable $component): void
+    {
+        $this->calledComponent = $component;
+    }
+
     public function setContent(Stringable $component, string $content): void
     {
         if ($this->calledComponent === $component) {
