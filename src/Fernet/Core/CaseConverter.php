@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fernet\Core;
 
-class Helper
+class CaseConverter
 {
     public static function camelCase(string $string): string
     {
@@ -18,7 +18,7 @@ class Helper
         return str_replace(' ', '', ucwords($string));
     }
 
-    public static function hyphen(string $string): string
+    public static function kebab(string $string): string
     {
         $string = str_replace('\\', '.', $string);
         $string = preg_replace('/([A-Z.])/', '-\1', $string);

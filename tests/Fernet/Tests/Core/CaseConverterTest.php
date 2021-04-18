@@ -2,20 +2,20 @@
 
 namespace Fernet\Tests\Core;
 
-use Fernet\Core\Helper;
+use Fernet\Core\CaseConverter;
 use Fernet\Tests\TestCase;
 
-class HelperTest extends TestCase
+class CaseConverterTest extends TestCase
 {
     public function testCamelCase(): void
     {
         self::assertEquals(
             'helloWorld',
-            Helper::camelCase('hello-world')
+            CaseConverter::camelCase('hello-world')
         );
         self::assertEquals(
             'anotherGoodExample',
-            Helper::camelCase('another__good__example')
+            CaseConverter::camelCase('another__good__example')
         );
     }
 
@@ -23,23 +23,23 @@ class HelperTest extends TestCase
     {
         self::assertEquals(
             'HelloWorld',
-            Helper::pascalCase('hello-world')
+            CaseConverter::pascalCase('hello-world')
         );
         self::assertEquals(
             'AnotherGoodExample',
-            Helper::pascalCase('another__good__example')
+            CaseConverter::pascalCase('another__good__example')
         );
     }
 
-    public function testHyphen(): void
+    public function testKebab(): void
     {
         self::assertEquals(
             'hello-world',
-            Helper::hyphen('HelloWorld')
+            CaseConverter::kebab('HelloWorld')
         );
         self::assertEquals(
             'another-good-example',
-            Helper::hyphen('AnotherGoodExample')
+            CaseConverter::kebab('AnotherGoodExample')
         );
     }
 
@@ -47,11 +47,11 @@ class HelperTest extends TestCase
     {
         self::assertEquals(
             'some.namespace.here',
-            Helper::hyphen('Some\\Namespace\\Here')
+            CaseConverter::kebab('Some\\Namespace\\Here')
         );
         self::assertEquals(
             'Some\\Namespace\\Here',
-            Helper::pascalCase('some.namespace.here')
+            CaseConverter::pascalCase('some.namespace.here')
         );
     }
 }

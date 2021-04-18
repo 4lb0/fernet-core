@@ -112,9 +112,9 @@ class Routes
             return $route;
         }
 
-        $url = Framework::config('urlPrefix').Helper::hyphen($component);
+        $url = Framework::config('urlPrefix').CaseConverter::kebab($component);
         if ('route' !== $method) {
-            $url .= '/'.Helper::hyphen($method);
+            $url .= '/'.CaseConverter::kebab($method);
         }
         if ($args) {
             $param = [];
@@ -141,7 +141,7 @@ class Routes
             if (!$vars['method']) {
                 $vars['method'] = 'route';
             }
-            $handler = Helper::pascalCase($vars['component']).'.'.Helper::camelCase($vars['method']);
+            $handler = CaseConverter::pascalCase($vars['component']).'.'.CaseConverter::camelCase($vars['method']);
         } else {
             $request->query->add($vars);
         }

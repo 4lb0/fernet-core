@@ -9,7 +9,7 @@ use Fernet\Component\Error404;
 use Fernet\Component\Error500;
 use Fernet\Component\FernetShowError;
 use Fernet\Core\ComponentElement;
-use Fernet\Core\Helper;
+use Fernet\Core\CaseConverter;
 use Fernet\Core\NotFoundException;
 use Fernet\Core\PluginLoader;
 use Fernet\Core\Router;
@@ -78,7 +78,7 @@ final class Framework
         foreach ($_ENV as $key => $value) {
             if (str_starts_with($key, $envPrefix)) {
                 $key = substr($key, strlen($envPrefix));
-                $key = Helper::camelCase($key);
+                $key = CaseConverter::camelCase($key);
                 $configs[$key] = is_bool($configs[$key]) ?
                     filter_var($value, FILTER_VALIDATE_BOOLEAN) :
                     $value;
