@@ -36,6 +36,15 @@ class ReplaceComponentsTest extends TestCase
         );
     }
 
+    public function testMultipleAttribute(): void
+    {
+        $replace = new ReplaceComponents();
+        self::assertEquals(
+            '<div><p>Hi John</p></div>',
+            $replace->replace('<div><TestReplaceComponent greeting="hi" name="John" /></div>')
+        );
+    }
+
     public function testEmptyAttribute(): void
     {
         $replace = new ReplaceComponents();
@@ -52,11 +61,13 @@ class ReplaceComponentsTest extends TestCase
 
 class TestReplaceComponent
 {
+    public string $greeting = "hello";
     public string $name = 'World';
 
     public function __toString(): string
     {
-        return "<p>Hello $this->name</p>";
+        $greeting = ucfirst($this->greeting);
+        return "<p>$greeting $this->name</p>";
     }
 }
 
