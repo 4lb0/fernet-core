@@ -11,7 +11,7 @@ class Link
 {
     public string $to;
     public array $params = [];
-    public string $class = '';
+    public string $css = '';
     public string $childContent;
 
     public function __construct(private Routes $routes, private Request $request)
@@ -30,8 +30,8 @@ class Link
         $link = $this->routes->get($component, $method, $this->params);
         $isActive = $this->request->server->get('REQUEST_URI') === $link;
         $classes = ['__fl'];
-        if ($this->class) {
-            $classes[] = $this->class;
+        if ($this->css) {
+            $classes[] = $this->css;
         }
         if ($isActive) {
             $classes[] = 'active';
