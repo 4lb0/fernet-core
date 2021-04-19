@@ -30,7 +30,7 @@ class ComponentFactory
 
     private function get(string $class): Stringable
     {
-        return $this->components[$class] ?? $this->container->get($class);
+        return $this->components[$class] ?? clone $this->container->get($class);
     }
 
     /**
