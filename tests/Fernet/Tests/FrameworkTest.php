@@ -53,13 +53,14 @@ class FrameworkTest extends TestCase
         self::assertEquals('some error', $framework->showError(new Exception('message')));
     }
 
-    public function testShowErrorOnShowingError(): void
+    public function testShowErrorOnDevMode(): void
     {
+        $this->expectException(Exception::class);
         $component = $this->createComponent('some error');
         $framework = Framework::getInstance();
         $framework->setConfig('devMode', true);
         $framework->setConfig('error500', $component);
-        self::assertStringContainsString('message', $framework->showError(new Exception('message')));
+        $framework->showError(new Exception('message'));
     }
 
     public function testRun(): void

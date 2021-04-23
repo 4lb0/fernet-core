@@ -7,9 +7,8 @@ namespace Fernet;
 use Exception;
 use Fernet\Component\Error404;
 use Fernet\Component\Error500;
-use Fernet\Component\FernetShowError;
-use Fernet\Core\ComponentElement;
 use Fernet\Core\CaseConverter;
+use Fernet\Core\ComponentElement;
 use Fernet\Core\NotFoundException;
 use Fernet\Core\PluginLoader;
 use Fernet\Core\Router;
@@ -24,6 +23,8 @@ use Throwable;
 
 final class Framework
 {
+    public const URL = 'https://fernet.ws';
+
     private const DEFAULT_CONFIG = [
         'devMode' => false,
         'urlPrefix' => '/',
@@ -40,6 +41,8 @@ final class Framework
         'routingFile' => 'routing.json',
         'pluginFile' => 'plugins.json',
         'enableJs' => false,
+        'editor' => 'sublime',
+        'resourcesPath' => null,
     ];
 
     private static self $instance;
@@ -75,6 +78,7 @@ final class Framework
     public static function setUp(array $configs = [], $envPrefix = self::DEFAULT_ENV_PREFIX): self
     {
         $configs = array_merge(self::DEFAULT_CONFIG, $configs);
+        $configs['resourcesPath'] = dirname(__DIR__, 2).'/resources/';
         foreach ($_ENV as $key => $value) {
             if (str_starts_with($key, $envPrefix)) {
                 $key = substr($key, strlen($envPrefix));
@@ -202,19 +206,21 @@ final class Framework
         return $response;
     }
 
-    public function showError(Throwable $error, string $type = 'error500'): string
+    public function showError(Throwable $error, string $type = 'error500'): ?string
     {
         $this->dispatch('onError', [$error]);
-        try {
-            $element = $this->getConfig('devMode') ?
-                new ComponentElement(FernetShowError::class, ['error' => $error]) :
-                new ComponentElement($this->getConfig($type));
+        if (!$this->getConfig('devMode')) {
+            try {
+                return (new ComponentElement($this->getConfig($type)))->render();
+            } catch (Exception $e) {
+                $this->log->error('Error when trying to show the error', [$e]);
 
-            return $element->render();
-        } catch (Exception $e) {
-            $this->log->error('Error when trying to show the error', [$e]);
-
-            return 'Error: '.$error->getMessage();
+                return
+            'Error: '.$error->getMessage()
+            .' (Failing to display error: '.$e->getMessage().')';
+            }
         }
+
+        throw $error;
     }
 }
