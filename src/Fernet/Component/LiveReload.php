@@ -8,6 +8,7 @@ use Fernet\Framework;
 
 class LiveReload
 {
+    public bool $preventWrapper = true;
     private bool $devMode;
 
     public function __construct(Framework $framework)

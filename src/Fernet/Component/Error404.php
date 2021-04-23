@@ -6,6 +6,8 @@ namespace Fernet\Component;
 
 class Error404
 {
+    public bool $preventWrapper = true;
+
     public function __toString(): string
     {
         return '<html lang="en"><body><h1>Error 404</h1><p>Page not found</p></body></html>';

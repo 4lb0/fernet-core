@@ -6,6 +6,8 @@ namespace Fernet\Component;
 
 class FernetLogo
 {
+    public bool $preventWrapper = true;
+
     public function __construct(
         public string $width = '200',
         public string $height = '200',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fernet\Component;
 
+use Fernet\Core\Exception;
 use Fernet\Core\Routes;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -14,13 +15,14 @@ class Link
     public string $class = '';
     public string $activeClass = 'active';
     public string $childContent;
+    public bool $preventWrapper = true;
 
     public function __construct(private Routes $routes, private Request $request)
     {
     }
 
     /**
-     * @throws \Fernet\Core\Exception
+     * @throws Exception
      */
     public function __toString(): string
     {

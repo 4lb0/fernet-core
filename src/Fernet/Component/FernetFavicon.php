@@ -6,6 +6,8 @@ namespace Fernet\Component;
 
 class FernetFavicon
 {
+    public bool $preventWrapper = true;
+
     public function __toString(): string
     {
         $svg = (string) new FernetLogo();
