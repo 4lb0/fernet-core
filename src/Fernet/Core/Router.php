@@ -10,8 +10,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class Router
 {
-    public function __construct(private Logger $log, private Routes $routes, private ?ComponentRouter $componentRouter = null, private ?JsBridge $jsBridge = null)
-    {
+    public function __construct(
+        private Logger $log,
+        private Routes $routes,
+        private ?Events $events = null,
+        private ?ComponentRouter $componentRouter = null,
+        private ?JsBridge $jsBridge = null
+    ) {
     }
 
     /**
@@ -42,10 +47,11 @@ class Router
         }
         if (!$response) {
             $this->log->debug('No response, rendering main component');
-            $response = new Response(
-                (new ComponentElement($defaultComponent))->setMain()->render(),
-                Response::HTTP_OK
-            );
+            $content = (new ComponentElement($defaultComponent))->setMain()->render();
+            if ($this->events) {
+                $content = $this->events->replaceCallbacks($content);
+            }
+            $response = new Response($content, Response::HTTP_OK);
         }
 
         return $response;

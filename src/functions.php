@@ -16,6 +16,12 @@ function onClick($callback, $unique = null): string
     return $events->onClick($callback, $unique);
 }
 
+function onReady($callback): string
+{
+    $events = Framework::getInstance()->getContainer()->get(Events::class);
+    return $events->onReady($callback);
+}
+
 function linkTo($component, $method = 'route', ...$params)
 {
     $routes = Framework::getInstance()->getContainer()->get(Routes::class);

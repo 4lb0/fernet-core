@@ -12,14 +12,17 @@ class ComponentFactory
 {
     private Container $container;
     private array $components = [];
+    private array $componentNamespaces;
 
     public function __construct(Framework $framework)
     {
         $this->container = $framework->getContainer();
+        $this->componentNamespaces = (array) $framework->getConfig('componentNamespaces');
     }
 
     public function add(Stringable $component): void
     {
+        $this->container->add($component::class, $component);
         $this->components[$component::class] = $component;
     }
 
@@ -42,13 +45,12 @@ class ComponentFactory
         if (class_exists($name)) {
             return $this->get($name);
         }
-        $namespaces = Framework::config('componentNamespaces');
-        foreach ($namespaces as $namespace) {
+        foreach ($this->componentNamespaces as $namespace) {
             $classWithNamespace = $namespace.'\\'.$name;
             if (class_exists($classWithNamespace)) {
                 return $this->get($classWithNamespace);
             }
         }
-        throw new NotFoundException(sprintf('Component "%s" not defined in ["%s"]', $name, implode('", "', $namespaces)));
+        throw new NotFoundException(sprintf('Component "%s" not defined in ["%s"]', $name, implode('", "', $this->componentNamespaces)));
     }
 }

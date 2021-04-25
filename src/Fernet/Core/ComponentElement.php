@@ -71,6 +71,7 @@ class ComponentElement
     public function setMain(): static
     {
         $this->component->preventWrapper = true;
+        $this->getFromContainer(ComponentFactory::class)->add($this->component);
 
         return $this;
     }
