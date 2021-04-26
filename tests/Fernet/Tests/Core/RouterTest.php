@@ -6,10 +6,10 @@ declare(strict_types=1);
 
 namespace Fernet\Tests\Core;
 
+use Fernet\Config;
 use Fernet\Core\NotFoundException;
 use Fernet\Core\Router;
 use Fernet\Core\Routes;
-use Fernet\Framework;
 use Fernet\Tests\TestCase;
 
 class RouterTest extends TestCase
@@ -27,22 +27,22 @@ class RouterTest extends TestCase
     public function testRouteNotFound(): void
     {
         $this->expectException(NotFoundException::class);
-        $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
+        $config = new Config();
+        $config->routing = ['/some-route' => 'SomeComponent'];
         $router = new Router(
             $this->createNullLogger(),
-            new Routes($framework, $this->createNullLogger())
+            new Routes($this->createNullLogger(), $config)
         );
         $router->route($this->createComponent(), $this->createRequest('/about'));
     }
 
     public function testBind(): void
     {
-        $framework = Framework::getInstance();
         $request = $this->createRequest();
         $request->request->set('fernet-bind', ['foo.bar' => 'foobar']);
         $router = new Router(
             $this->createNullLogger(),
-            new Routes($framework, $this->createNullLogger())
+            new Routes($this->createNullLogger(), new Config())
         );
         $component = $this->createComponent();
         $component->foo = (object) ['bar' => null];
@@ -52,13 +52,12 @@ class RouterTest extends TestCase
 
     public function testGetArgs(): void
     {
-        $framework = Framework::getInstance();
         $request = $this->createRequest();
         $request->query->set('fernet-params', ['someConfig' => serialize(false)]);
         $request->query->set('other-regular-query', 'value');
         $router = new Router(
             $this->createNullLogger(),
-            new Routes($framework, $this->createNullLogger())
+            new Routes($this->createNullLogger(), new Config())
         );
         self::assertCount(3, $router->getArgs($request));
     }

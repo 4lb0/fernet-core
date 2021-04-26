@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Fernet;
 
 use Exception;
-use Fernet\Component\Error404;
-use Fernet\Component\Error500;
 use Fernet\Core\CaseConverter;
 use Fernet\Core\ComponentElement;
 use Fernet\Core\NotFoundException;
@@ -26,23 +24,19 @@ final class Framework
     public const URL = 'https://fernet.ws';
 
     private const DEFAULT_CONFIG = [
-        'devMode' => false,
-        'urlPrefix' => '/',
+        'enableJs' => false,
+        'resourcesPath' => null,
         'componentNamespaces' => [
             'App\\Component',
             'Fernet\\Component',
         ],
+        'rootPath' => '.',
+        // env
+        'devMode' => false,
         'logPath' => 'php://stdout',
         'logName' => 'fernet',
         'logLevel' => Logger::INFO,
-        'error404' => Error404::class,
-        'error500' => Error500::class,
-        'rootPath' => '.',
-        'routingFile' => 'routing.json',
-        'pluginFile' => 'plugins.json',
-        'enableJs' => false,
         'editor' => 'sublime',
-        'resourcesPath' => null,
     ];
 
     private static self $instance;
@@ -174,6 +168,9 @@ final class Framework
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     public function run(Stringable | string $component, ?Request $request = null): Response
     {
         try {
@@ -206,12 +203,16 @@ final class Framework
         return $response;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function showError(Throwable $error, string $type = 'error500'): ?string
     {
         $this->dispatch('onError', [$error]);
         if (!$this->getConfig('devMode')) {
             try {
-                return (new ComponentElement($this->getConfig($type)))->render();
+                $component = $this->getContainer()->get(Config::class)->errorPages[$type];
+                return (new ComponentElement($component))->render();
             } catch (Exception $e) {
                 $this->log->error('Error when trying to show the error', [$e]);
 

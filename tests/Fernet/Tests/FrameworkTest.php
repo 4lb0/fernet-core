@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fernet\Tests;
 
+use Fernet\Config;
 use Fernet\Core\Exception;
 use Fernet\Framework;
 use Monolog\Logger;
@@ -49,7 +50,7 @@ class FrameworkTest extends TestCase
         $component = $this->createComponent('some error');
         $framework = Framework::getInstance();
         $framework->setConfig('devMode', false);
-        $framework->setConfig('error500', $component);
+        $framework->getContainer()->get(Config::class)->errorPages = ['error500' => $component];
         self::assertEquals('some error', $framework->showError(new Exception('message')));
     }
 
@@ -59,7 +60,7 @@ class FrameworkTest extends TestCase
         $component = $this->createComponent('some error');
         $framework = Framework::getInstance();
         $framework->setConfig('devMode', true);
-        $framework->setConfig('error500', $component);
+        $framework->getContainer()->get(Config::class)->errorPages = ['error500' => $component];
         $framework->showError(new Exception('message'));
     }
 
@@ -75,7 +76,8 @@ class FrameworkTest extends TestCase
     {
         $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
         $notFoundComponent = $this->createComponent('not found');
-        $framework->setConfig('error404', $notFoundComponent)->setConfig('devMode', false);
+        $framework->setConfig('devMode', false);
+        $framework->getContainer()->get(Config::class)->errorPages = ['error404' => $notFoundComponent];
         $component = $this->createComponent();
         $request = $this->createRequest('/not/found');
         self::assertEquals('not found', $framework->run($component, $request)->getContent());

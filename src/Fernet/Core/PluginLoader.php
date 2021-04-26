@@ -4,23 +4,17 @@ declare(strict_types=1);
 
 namespace Fernet\Core;
 
+use Fernet\Config;
 use Fernet\Framework;
-use JsonException;
 use Monolog\Logger;
 
 class PluginLoader
 {
     private const PLUGIN_FILE = 'plugin.php';
-    private Logger $log;
-    private string $configFile;
     private string $rootPath;
-    private Framework $framework;
 
-    public function __construct(Framework $framework, Logger $log)
+    public function __construct(private Framework $framework, private Logger $log, private Config $config)
     {
-        $this->log = $log;
-        $this->framework = $framework;
-        $this->configFile = $framework->configFile('pluginFile');
         $this->rootPath = (string) $framework->getConfig('rootPath');
     }
 
@@ -42,18 +36,8 @@ class PluginLoader
      */
     public function warmUpPlugins(): array
     {
-        if (!file_exists($this->configFile)) {
-            return [];
-        }
         $plugins = [];
-        try {
-            $list = json_decode(file_get_contents($this->configFile), true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
-            throw new Exception("Plugin file \"$this->configFile\" is not a valid JSON");
-        }
-        if (!is_array($plugins)) {
-            throw new Exception("Plugin file \"$this->configFile\" should contain an array");
-        }
+        $list = $this->config->plugins;
         foreach ($list as $pluginName) {
             $file = "$this->rootPath/vendor/$pluginName/".self::PLUGIN_FILE;
             if (!file_exists($file)) {

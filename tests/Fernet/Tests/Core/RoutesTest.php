@@ -6,42 +6,28 @@ declare(strict_types=1);
 
 namespace Fernet\Tests\Core;
 
-use Fernet\Core\Exception;
+use Fernet\Config;
 use Fernet\Core\Routes;
-use Fernet\Framework;
 use Fernet\Tests\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 class RoutesTest extends TestCase
 {
-    public function testNoRoutesFile(): void
+    private function createRoutes(): Routes
     {
-        $framework = Framework::setUp(['routingFile' => 'file/not/exists.json']);
-        $routes = new Routes($framework, $this->createNullLogger());
-        self::assertEquals([], $routes->getRoutes());
-    }
+        $config = new Config();
+        $config->routing = [
+            '/about' => 'Menu.handleAbout',
+            '/some/foo/bar/page' => 'FooBar.renderPage',
+            '/name/{name}/age/{age}' => 'UserProfile.show',
+        ];
 
-    public function testRoutesFile(): void
-    {
-        $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
-        $routes = (new Routes($framework, $this->createNullLogger()))->getRoutes();
-        self::assertArrayHasKey('/about', $routes);
-        self::assertContains('Menu.handleAbout', $routes);
-        self::assertArrayHasKey('/some/foo/bar/page', $routes);
-        self::assertContains('FooBar.renderPage', $routes);
-    }
-
-    public function testRoutesFileJsonError(): void
-    {
-        $this->expectException(Exception::class);
-        $framework = Framework::setUp(['routingFile' => 'tests/fixtures/non-json-file.txt']);
-        (new Routes($framework, $this->createNullLogger()))->getRoutes();
+        return new Routes($this->createNullLogger(), $config);
     }
 
     public function testLink(): void
     {
-        $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
-        $routes = new Routes($framework, $this->createNullLogger());
+        $routes = $this->createRoutes();
         self::assertEquals('/about', $routes->get('Menu', 'handleAbout'));
         self::assertEquals('/some/foo/bar/page', $routes->get('FooBar', 'renderPage'));
         self::assertEquals('/not-mapped-component/handle-click', $routes->get('NotMappedComponent', 'handleClick'));
@@ -50,8 +36,7 @@ class RoutesTest extends TestCase
 
     public function testDispatch(): void
     {
-        $framework = Framework::setUp(['routingFile' => 'tests/fixtures/routing.json']);
-        $routes = new Routes($framework, $this->createNullLogger());
+        $routes = $this->createRoutes();
         $request = $this->createRequest('/about');
         self::assertEquals('Menu.handleAbout', $routes->dispatch($request));
 
@@ -64,8 +49,7 @@ class RoutesTest extends TestCase
 
     public function testDefaultHandlersRoutes(): void
     {
-        $framework = Framework::setUp();
-        $routes = new Routes($framework, $this->createNullLogger());
+        $routes = new Routes($this->createNullLogger(), new Config());
         $request = $this->createRequest('/hello-component/some-handler');
         self::assertEquals('HelloComponent.someHandler', $routes->dispatch($request));
     }

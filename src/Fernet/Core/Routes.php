@@ -7,8 +7,7 @@ namespace Fernet\Core;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
-use Fernet\Framework;
-use JsonException;
+use Fernet\Config;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -16,18 +15,15 @@ class Routes
 {
     private const DEFAULT_ROUTE = '/{component}[/{method}]';
     private const DEFAULT_ROUTE_NAME = '__default_fernet_route';
+    private const DEFAULT_METHOD = 'route';
     private Dispatcher $dispatcher;
     private array $routes = [];
-    private string $configFile;
-    private Logger $log;
 
     /**
      * Routes constructor.
      */
-    public function __construct(Framework $framework, Logger $logger)
+    public function __construct(private Logger $log, private Config $config)
     {
-        $this->configFile = $framework->configFile('routingFile');
-        $this->log = $logger;
     }
 
     public function setDispatcher(Dispatcher $dispatcher): void
@@ -35,9 +31,6 @@ class Routes
         $this->dispatcher = $dispatcher;
     }
 
-    /**
-     * @throws Exception
-     */
     public function getDispatcher(): Dispatcher
     {
         if (empty($this->dispatcher)) {
@@ -47,9 +40,6 @@ class Routes
         return $this->dispatcher;
     }
 
-    /**
-     * @throws Exception
-     */
     public function defaultDispatcher(): Dispatcher
     {
         $this->log->debug('Using default routing dispatcher');
@@ -63,39 +53,20 @@ class Routes
         });
     }
 
-    /**
-     * @throws Exception
-     */
     public function getRoutes(): array
     {
-        // TODO Add cache here
-        if (!file_exists($this->configFile)) {
-            $this->log->debug('No routing file');
-
-            return [];
-        }
-
-        try {
-            $routes = json_decode(file_get_contents($this->configFile), true, 512, JSON_THROW_ON_ERROR);
-            foreach ($routes as $route => $handler) {
-                [$component, $method] = explode('.', $handler.'.');
-                if (!$method) {
-                    $method = 'route';
-                }
-                $this->routes[$component][$method] = $route;
+        $routes = $this->config->routing;
+        foreach ($routes as $route => $handler) {
+            [$component, $method] = explode('.', $handler.'.');
+            if (!$method) {
+                $method = static::DEFAULT_METHOD;
             }
-
-            return $routes;
-        } catch (JsonException $e) {
-            $message = "Error parsing the JSON in your routing file \"$this->configFile\": ".$e->getMessage();
-            $this->log->error($message);
-            throw new Exception($message);
+            $this->routes[$component][$method] = $route;
         }
+
+        return $routes;
     }
 
-    /**
-     * @throws Exception
-     */
     public function get(string $component, string $method, ?array $args = null): string
     {
         if (!$this->routes) {
@@ -112,7 +83,7 @@ class Routes
             return $route;
         }
 
-        $url = Framework::config('urlPrefix').CaseConverter::kebab($component);
+        $url = $this->config->baseUri.CaseConverter::kebab($component);
         if ('route' !== $method) {
             $url .= '/'.CaseConverter::kebab($method);
         }
@@ -127,9 +98,6 @@ class Routes
         return $url;
     }
 
-    /**
-     * @throws Exception
-     */
     public function dispatch(Request $request): ?string
     {
         $defaults = [Dispatcher::NOT_FOUND, null, []];
@@ -138,7 +106,7 @@ class Routes
             return null;
         }
         if (self::DEFAULT_ROUTE_NAME === $handler) {
-            if (!$vars['method']) {
+            if (!isset($vars['method'])) {
                 $vars['method'] = 'route';
             }
             $handler = CaseConverter::pascalCase($vars['component']).'.'.CaseConverter::camelCase($vars['method']);
