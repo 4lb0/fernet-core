@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fernet\Tests;
 
 use Fernet\Config;
-use Fernet\Core\Exception;
 use Fernet\Framework;
 use Monolog\Logger;
 
@@ -30,25 +29,6 @@ class FrameworkTest extends TestCase
         $framework = Framework::getInstance();
         self::assertSame($framework, $framework->setConfig('error404', 'SomeErrorComponent'));
         self::assertEquals('SomeErrorComponent', $framework->getConfig('error404'));
-    }
-
-    public function testShowError(): void
-    {
-        $component = $this->createComponent('some error');
-        $framework = Framework::getInstance();
-        $framework->setConfig('devMode', false);
-        $framework->getContainer()->get(Config::class)->errorPages = ['error500' => $component];
-        self::assertEquals('some error', $framework->showError(new Exception('message')));
-    }
-
-    public function testShowErrorOnDevMode(): void
-    {
-        $this->expectException(Exception::class);
-        $component = $this->createComponent('some error');
-        $framework = Framework::getInstance();
-        $framework->setConfig('devMode', true);
-        $framework->getContainer()->get(Config::class)->errorPages = ['error500' => $component];
-        $framework->showError(new Exception('message'));
     }
 
     public function testRun(): void

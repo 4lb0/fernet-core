@@ -12,6 +12,7 @@ use Symfony\Component\Yaml\Yaml;
  * @property array plugins List of plugins installed
  * @property array routing Routes defined
  * @property string baseUri URL base path
+ * @property array errorPages Error pages
  */
 class Config
 {

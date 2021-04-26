@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Fernet;
 
-use Exception;
 use Fernet\Core\CaseConverter;
-use Fernet\Core\ComponentElement;
-use Fernet\Core\NotFoundException;
 use Fernet\Core\PluginLoader;
-use Fernet\Core\Router;
+use Fernet\Core\Run;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Monolog\Handler\StreamHandler;
@@ -17,7 +14,6 @@ use Monolog\Logger;
 use Stringable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Throwable;
 
 final class Framework
 {
@@ -63,13 +59,13 @@ final class Framework
         $this->log = $logger;
     }
 
-    public static function setUp(array $configs = [], $envPrefix = self::DEFAULT_ENV_PREFIX): self
+    public static function setUp(array $configs = []): self
     {
         $configs = array_merge(self::DEFAULT_CONFIG, $configs);
         $configs['resourcesPath'] = dirname(__DIR__, 2).'/resources/';
         foreach ($_ENV as $key => $value) {
-            if (str_starts_with($key, $envPrefix)) {
-                $key = substr($key, strlen($envPrefix));
+            if (str_starts_with($key, self::DEFAULT_ENV_PREFIX)) {
+                $key = substr($key, strlen(self::DEFAULT_ENV_PREFIX));
                 $key = CaseConverter::camelCase($key);
                 $configs[$key] = is_bool($configs[$key]) ?
                     filter_var($value, FILTER_VALIDATE_BOOLEAN) :
@@ -134,56 +130,13 @@ final class Framework
         return $this;
     }
 
-    /**
-     * @throws Throwable
-     */
     public function run(Stringable | string $component, ?Request $request = null): Response
     {
-        try {
-            if (!$request) {
-                $request = Request::createFromGlobals();
-            }
-            $this->container->add(Request::class, $request);
-            /** @var Router $router */
-            $router = $this->container->get(Router::class);
-            $response = $router->route($component, $request);
-        } catch (NotFoundException $notFoundException) {
-            $this->log->notice('Route not found');
-
-            return new Response(
-                $this->showError($notFoundException, 'error404'),
-                Response::HTTP_NOT_FOUND
-            );
-        } catch (Throwable $error) {
-            $this->log->error($error->getMessage());
-            $response = new Response(
-                $this->showError($error),
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
+        if (!$request) {
+            $request = Request::createFromGlobals();
         }
-        $response->prepare($request);
+        $this->container->add(Request::class, $request);
 
-        return $response;
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function showError(Throwable $error, string $type = 'error500'): ?string
-    {
-        if (!$this->getConfig('devMode')) {
-            try {
-                $component = $this->getContainer()->get(Config::class)->errorPages[$type];
-                return (new ComponentElement($component))->render();
-            } catch (Exception $e) {
-                $this->log->error('Error when trying to show the error', [$e]);
-
-                return
-            'Error: '.$error->getMessage()
-            .' (Failing to display error: '.$e->getMessage().')';
-            }
-        }
-
-        throw $error;
+        return $this->container->get(Run::class)->__invoke($component, $request);
     }
 }
