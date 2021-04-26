@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fernet\Core;
 
 use function call_user_func_array;
+use Fernet\Component\FernetStylesheet;
 use Fernet\Framework;
 use function get_class;
 use function is_string;
@@ -65,6 +66,7 @@ class ComponentElement
             return $content;
         }
         $content = $this->getFromContainer(ReplaceComponents::class)->replace($content);
+
         return $this->getFromContainer(ReplaceAttributes::class)->replace($content, $this->component);
     }
 
@@ -93,6 +95,14 @@ class ComponentElement
             // Restore the events because we're going to recreate them
             $content = $this->_render($this->component->__toString());
             $log->debug("Finish rendering dirty \"$class\"");
+        }
+
+        $stylesClass = $this->component::class.'::CSS';
+        if (defined($stylesClass)) {
+            $this->getFromContainer(FernetStylesheet::class)->add(
+                constant($stylesClass),
+                $this->component::class
+            );
         }
 
         $this->getFromContainer(JsBridge::class)->setContent($this->component, $content);

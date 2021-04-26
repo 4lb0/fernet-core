@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fernet\Core;
 
 use Fernet\Framework;
+use Fernet\UniqueComponent;
 use League\Container\Container;
 use Stringable;
 
@@ -33,7 +34,12 @@ class ComponentFactory
 
     private function get(string $class): Stringable
     {
-        return $this->components[$class] ?? clone $this->container->get($class);
+        if (isset($this->components[$class])) {
+            return $this->components[$class];
+        }
+        $component = $this->container->get($class);
+
+        return in_array(UniqueComponent::class, class_uses($component), true) ? $component : clone $component;
     }
 
     /**

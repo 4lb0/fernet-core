@@ -190,3 +190,34 @@ Feature: Components
     """
     When the framework is run with component "ComponentWithNamespace"
     Then the output is '<div><p>FooBar</p></div>'
+
+  Scenario: Creating a component with css styles
+    Given the component defined in the class
+    """
+    class StyledComponent
+    {
+      public const CSS = 'body { background:red }';
+      public function __toString(): string
+      {
+        return '<html><head><FernetStylesheet /></head>
+                <body><ButtonStyledComponent href="#">Styled component</ButtonStyledComponent>
+                </body></html>';
+      }
+    }
+    """
+    And the component defined in the class
+    """
+    class ButtonStyledComponent
+    {
+      public string $href;
+      public const CSS = '.button { text-decoration:none }';
+      public function __toString(): string
+      {
+        return "<a href=\"$this->href\" class=\"button\">$this->childContent</a>";
+      }
+    }
+    """
+    When the main component is "StyledComponent"
+    And go to "/"
+    Then I can see the text "background:red" on "style"
+    And I can see the text "text-decoration:none" on "style"
