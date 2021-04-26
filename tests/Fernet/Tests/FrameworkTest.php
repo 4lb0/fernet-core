@@ -8,7 +8,6 @@ use Fernet\Config;
 use Fernet\Core\Exception;
 use Fernet\Framework;
 use Monolog\Logger;
-use stdClass;
 
 class FrameworkTest extends TestCase
 {
@@ -31,18 +30,6 @@ class FrameworkTest extends TestCase
         $framework = Framework::getInstance();
         self::assertSame($framework, $framework->setConfig('error404', 'SomeErrorComponent'));
         self::assertEquals('SomeErrorComponent', $framework->getConfig('error404'));
-    }
-
-    /** @noinspection MockingMethodsCorrectnessInspection
-     * @noinspection PhpParamsInspection
-     */
-    public function testObserver(): void
-    {
-        $framework = Framework::getInstance();
-        $mock = $this->getMockBuilder(stdClass::class)->addMethods(['__invoke'])->getMock();
-        $mock->expects(self::once())->method('__invoke');
-        $framework->subscribe('onRequest', $mock);
-        $framework->dispatch('onRequest');
     }
 
     public function testShowError(): void

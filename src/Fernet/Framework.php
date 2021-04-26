@@ -49,12 +49,6 @@ final class Framework
     private Container $container;
     private Logger $log;
     private array $configs;
-    private array $events = [
-        'onLoad' => [],
-        'onRequest' => [],
-        'onResponse' => [],
-        'onError' => [],
-    ];
 
     private function __construct(array $configs)
     {
@@ -102,11 +96,6 @@ final class Framework
         return self::getInstance()->getConfig($name);
     }
 
-    public function configFile(string $name): string
-    {
-        return $this->getConfig('rootPath').DIRECTORY_SEPARATOR.$this->getConfig($name);
-    }
-
     public function getContainer(): Container
     {
         return $this->container;
@@ -146,44 +135,18 @@ final class Framework
     }
 
     /**
-     * @Framework
-     *
-     * @param string   $event    Event to be subscribed
-     * @param callable $callback Callback
-     *
-     * @return Framework
-     */
-    public function subscribe(string $event, callable $callback): self
-    {
-        $this->events[$event][] = $callback;
-
-        return $this;
-    }
-
-    public function dispatch(string $event, array $args = []): void
-    {
-        foreach ($this->events[$event] as $position => $callback) {
-            $this->log->debug("Dispatch \"$event\" callback #$position");
-            call_user_func_array($callback, $args);
-        }
-    }
-
-    /**
      * @throws Throwable
      */
     public function run(Stringable | string $component, ?Request $request = null): Response
     {
         try {
-            $this->dispatch('onLoad', [$this]);
             if (!$request) {
                 $request = Request::createFromGlobals();
             }
-            $this->dispatch('onRequest', [$request]);
             $this->container->add(Request::class, $request);
             /** @var Router $router */
             $router = $this->container->get(Router::class);
             $response = $router->route($component, $request);
-            $this->dispatch('onResponse', [$response]);
         } catch (NotFoundException $notFoundException) {
             $this->log->notice('Route not found');
 
@@ -208,7 +171,6 @@ final class Framework
      */
     public function showError(Throwable $error, string $type = 'error500'): ?string
     {
-        $this->dispatch('onError', [$error]);
         if (!$this->getConfig('devMode')) {
             try {
                 $component = $this->getContainer()->get(Config::class)->errorPages[$type];
