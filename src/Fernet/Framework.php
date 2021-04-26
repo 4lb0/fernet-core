@@ -73,7 +73,11 @@ final class Framework
             }
         }
         self::$instance = new self($configs);
-        self::$instance->getContainer()->get(PluginLoader::class)->loadPlugins();
+        $pluginLoader = self::$instance->getContainer()->get(PluginLoader::class);
+        if (getenv('FERNET_SETUP_PLUGINS')) {
+            $pluginLoader->install();
+        }
+        $pluginLoader->load();
 
         return self::$instance;
     }

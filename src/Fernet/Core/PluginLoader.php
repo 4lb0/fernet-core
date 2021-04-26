@@ -21,13 +21,24 @@ class PluginLoader
     /**
      * @throws Exception
      */
-    public function loadPlugins(): void
+    public function load(): void
     {
         $plugins = $this->warmUpPlugins();
         // TODO: Cache warm up
         foreach ($plugins as $pluginName => $class) {
             $this->log->debug("Load plugin $pluginName");
             (new $class())->setUp($this->framework);
+        }
+    }
+    /**
+     * @throws Exception
+     */
+    public function install(): void
+    {
+        $plugins = $this->warmUpPlugins();
+        foreach ($plugins as $pluginName => $class) {
+            $this->log->debug("Install plugin $pluginName");
+            (new $class())->install($this->framework);
         }
     }
 
@@ -47,9 +58,6 @@ class PluginLoader
             if (class_exists($class) && is_subclass_of($class, PluginBootstrap::class)) {
                 $this->log->debug("Warm up plugin $pluginName");
                 $plugins[$pluginName] = $class;
-                // TODO: When I should run the install?
-                $this->log->debug("Install plugin $pluginName");
-                (new $class())->install($this->framework);
             } else {
                 throw new Exception("Plugin \"$pluginName\" Bootstrap class should extend ".PluginBootstrap::class);
             }

@@ -28,7 +28,7 @@ class PluginLoaderTest extends TestCase
         $config = new Config();
         $config-> plugins = ['acme/package'];
         $pluginLoader = new PluginLoader($framework, $this->createNullLogger(), $config);
-        $pluginLoader->loadPlugins();
+        $pluginLoader->load();
         self::assertTrue(MyPluginTest::$pluginLoaded);
     }
 }
