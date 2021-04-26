@@ -14,11 +14,9 @@ class ReplaceAttributes
     private const REGEX_A_ONCLICK = '/<a.*?(@(href)=(["\'])(.*?)\3)/';
     private const REGEX_BIND_INPUT = '/<input.*?(@(bind)=(["\'])(.*?)\3)/';
     private const REGEX_BIND_TEXTAREA = '/<textarea(.*?)(@bind=(["\'])((?:\\\\3|(?:(?!\3)).)*)(\3))([^>]*)>/';
-    private Routes $routes;
 
-    public function __construct(Routes $routes)
+    public function __construct(private Routes $routes)
     {
-        $this->routes = $routes;
     }
 
     public function replace(string $content, Stringable $component): string
@@ -45,11 +43,7 @@ class ReplaceAttributes
                         [, $definition, $args] = $match;
                         $args = @unserialize(html_entity_decode($args), ['allowed_classes' => true]);
                     }
-                    try {
-                        $url = $this->routes->get($classWithoutNamespace, $definition, $args);
-                    } catch (Exception) {
-                        $url = false;
-                    }
+                    $url = $this->routes->get($classWithoutNamespace, $definition, $args);
                     $contents[] = sprintf($attr, $url);
                 }
             }
