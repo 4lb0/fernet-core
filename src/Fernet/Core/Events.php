@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Fernet\Core;
 
-use Symfony\Component\HttpFoundation\Request;
 use Exception;
+use Symfony\Component\HttpFoundation\Request;
 
 class Events
 {
@@ -16,10 +16,8 @@ class Events
     private int $events = 0;
     private array $callbacks = [];
 
-    public function __construct(
-        private Request $request,
-        private JsBridge $jsBridge
-    ) {
+    public function __construct(private Request $request)
+    {
         try {
             $this->random = bin2hex(random_bytes(static::RANDOM_LENGTH / 2));
         } catch (Exception) {
@@ -50,9 +48,6 @@ class Events
         $hash = $this->hash(++$this->events, $unique);
         if ($this->request->query->get(static::QUERY_PARAM) === $hash) {
             $callback();
-            if ('PUT' === $this->request->getMethod() && 'fernet_replace' === $this->request->getContent()) {
-                $this->jsBridge->called($callback);
-            }
             $this->request->query->remove(static::QUERY_PARAM);
         }
         $uri = strstr($_SERVER['REQUEST_URI'], '?', true);

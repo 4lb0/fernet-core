@@ -35,7 +35,7 @@ class Router
             }
             $this->log->debug("Route matched $route");
             $component = new ComponentElement($class);
-            if ('PUT' === $request->getMethod()) {
+            if ($request->headers->has('X-Fernet-Js')) {
                 $this->log->debug("PUT $route");
                 $this->jsBridge->setRoute($component->getComponent());
             }
