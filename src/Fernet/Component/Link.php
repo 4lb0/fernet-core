@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Fernet\Component;
 
-use Fernet\Core\Exception;
 use Fernet\Core\Routes;
 use Symfony\Component\HttpFoundation\Request;
 
 class Link
 {
+    public const CSS_CLASS = '__fl';
     public string $to;
     public array $params = [];
     public string $class = '';
@@ -21,9 +21,6 @@ class Link
     {
     }
 
-    /**
-     * @throws Exception
-     */
     public function __toString(): string
     {
         [$component, $method] = explode('.', $this->to.'.');
@@ -32,7 +29,7 @@ class Link
         }
         $link = $this->routes->get($component, $method, $this->params);
         $isActive = $this->request->server->get('REQUEST_URI') === $link;
-        $classes = ['__fl'];
+        $classes = [static::CSS_CLASS];
         if ($this->class) {
             $classes[] = $this->class;
         }
@@ -41,6 +38,6 @@ class Link
         }
         $css = implode(' ', $classes);
 
-        return "<a href=\"$link\" class=\"$css\">$this->childContent</a>";
+        return "<a href=\"$link\" class=\"$css\" data-active-class=\"$this->activeClass\">$this->childContent</a>";
     }
 }
