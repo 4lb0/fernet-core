@@ -30,6 +30,7 @@ class Config
 
     public function __construct(string $configFile = self::DEFAULT_CONFIG_FILE)
     {
+        $configFile = Framework::config('rootPath').DIRECTORY_SEPARATOR.$configFile;
         if (file_exists($configFile)) {
             $this->config = array_merge($this->config, Yaml::parseFile($configFile));
         }
