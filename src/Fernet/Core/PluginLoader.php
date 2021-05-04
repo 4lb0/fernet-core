@@ -59,7 +59,7 @@ class PluginLoader
                 $this->log->debug("Warm up plugin $pluginName");
                 $plugins[$pluginName] = $class;
             } else {
-                throw new Exception("Plugin \"$pluginName\" Bootstrap class should extend ".PluginBootstrap::class);
+                throw new Exception("Plugin \"$pluginName\" Bootstrap class should extend ".PluginBootstrap::class." in file \"$file\"");
             }
         }
 
