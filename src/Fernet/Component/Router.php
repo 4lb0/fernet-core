@@ -13,6 +13,7 @@ class Router
     public const ROUTER_ID = '__fr';
 
     public string $default = 'Error404';
+    public bool $preventWrapper = true;
 
     private string | Stringable $route;
 
@@ -31,10 +32,9 @@ class Router
         $content = (new ComponentElement($this->route ?? $this->default))->render();
 
         if ($this->framework->getConfig('enableJs')) {
-            $wrapperClass = ComponentElement::WRAPPER_CLASS;
             $routerId = static::ROUTER_ID;
 
-            return "<span id=\"$routerId\" class=\"$wrapperClass\">$content</span>";
+            return "<div id=\"$routerId\">$content</div>";
         }
 
         return $content;
